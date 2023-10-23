@@ -1,0 +1,21 @@
+import React from 'react';
+
+const Home = () => {
+  const containerStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '50vh', // This ensures the content is centered vertically
+  };
+
+  return (
+    <div style={containerStyle}>
+      <h1>Welcome to HomePage</h1>
+      <h5>Here you can create an account or log in</h5>
+    </div>
+  );
+};
+
+export default Home;
+
