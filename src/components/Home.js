@@ -1,4 +1,5 @@
 import React from 'react';
+import "../components/Style.css"
 
 const Home = () => {
   const containerStyle = {
