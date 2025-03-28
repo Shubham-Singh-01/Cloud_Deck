@@ -1,22 +1,16 @@
 import React from 'react';
-import "../components/Style.css"
+import { Link } from 'react-router-dom';
+import './Style.css';
 
 const Home = () => {
-  const containerStyle = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: '50vh', // This ensures the content is centered vertically
-  };
-
   return (
-    <div style={containerStyle}>
-      <h1>Welcome to HomePage</h1>
-      <h5>Here you can create an account or log in</h5>
+    <div className="container cloud-bg d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+      <div className="cloud-card text-center animate-fade-in">
+        <h1 className="mb-4">Welcome to Cloud Deck</h1>
+        <h5 className="text-muted mb-4">Secure, Simple, and Reliable</h5>
+      </div>
     </div>
   );
 };
 
 export default Home;
-

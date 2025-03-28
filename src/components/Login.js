@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import './Style.css';
 
-
-
-const Login = (props) => {
+const Login = () => {
     const [credentials, setCredential] = useState({email: "",password: ""})
     let navigate = useNavigate();
     
@@ -19,36 +18,57 @@ const Login = (props) => {
     const json = await response.json();
     console.log(json);
     if (json.success){
-      // Save the auth token and redirect
       localStorage.setItem('token', json.authtoken); 
       navigate("/Start");
-
-  }
-  else{
+    }
+    else{
       alert("Invalid credentials");
+    }
   }
-}
 
-const onChange = (e)=>{
+  const onChange = (e)=>{
     setCredential({...credentials, [e.target.name]: e.target.value})
-}
+  }
 
-return (
-    <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
-        <form onSubmit={handleSubmit} className="w-50">
-          <div className="mb-3">
+  return (
+    <div className="container cloud-bg d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+      <div className="form-container animate-fade-in">
+        <h2 className="text-center mb-4">Login to Your Account</h2>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
             <label htmlFor="email" className="form-label">Email address</label>
-            <input type="email" className="form-control" value={credentials.email} onChange={onChange} id="email" name="email" aria-describedby="emailHelp" />
-            <div id="emailHelp" className="form-text">We'll never share your email with anyone else.</div>
+            <input 
+              type="email" 
+              className="form-control" 
+              value={credentials.email} 
+              onChange={onChange} 
+              id="email" 
+              name="email" 
+              aria-describedby="emailHelp" 
+              required 
+            />
+            <small id="emailHelp" className="form-text">We'll never share your email with anyone else.</small>
           </div>
-          <div className="mb-3">
+          <div className="form-group">
             <label htmlFor="password" className="form-label">Password</label>
-            <input type="password" className="form-control" value={credentials.password} onChange={onChange} name="password" id="password" />
+            <input 
+              type="password" 
+              className="form-control" 
+              value={credentials.password} 
+              onChange={onChange} 
+              name="password" 
+              id="password" 
+              required 
+            />
           </div>
-          <button type="submit" className="btn btn-primary">Submit</button>
+          <button type="submit" className="btn btn-primary w-100 mt-3">Login</button>
+          <div className="text-center mt-3">
+            <small>Don't have an account? <Link to="/signup" className="text-primary">Sign Up</Link></small>
+          </div>
         </form>
+      </div>
     </div>
-    )
+  )
 }
 
 export default Login

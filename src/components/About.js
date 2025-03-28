@@ -1,48 +1,52 @@
 import React from 'react';
+import { ShieldCheck, UserPlus, Database, Palette } from 'lucide-react';
+import './Style.css';
 
 const About = () => {
+  const FeatureCard = ({ icon: Icon, title, description }) => (
+    <div className="feature-card">
+      <div className="feature-icon">
+        <Icon className="icon" />
+      </div>
+      <div className="feature-content">
+        <h3 className="feature-title">{title}</h3>
+        <p className="feature-description">{description}</p>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="container my-5">
-      <div className="row justify-content-center">
-        <div className="col-md-8">
-          <div className="card">
-            <div className="card-body">
-              <h1 className="card-title text-center mb-4">About Our Authentication System</h1>
-              <p>
-                At [Your App Name], we're dedicated to providing a secure and seamless experience for our users. Our authentication system, powered by MongoDB and React.js, ensures that your personal data is protected while offering user-friendly login and signup processes.
-              </p>
-              <h2>Why Choose Our Authentication System?</h2>
-              <ul>
-                <li>
-                  <strong>Security:</strong> We prioritize your online security. Our robust authentication system employs industry best practices to keep your data safe. Your passwords and sensitive information are securely stored using MongoDB's advanced encryption.
-                </li>
-                <li>
-                  <strong>User-Friendly:</strong> We understand the importance of a smooth user experience. Our login and signup pages are designed to be intuitive and easy to use, ensuring a hassle-free onboarding process.
-                </li>
-                <li>
-                  <strong>Reliability:</strong> MongoDB, a leading NoSQL database, powers our system. This database offers scalability, redundancy, and performance, guaranteeing reliability for our users.
-                </li>
-                <li>
-                  <strong>Customization:</strong> We've designed our authentication system to be flexible and adaptable. You can easily integrate it into your own projects, tailoring it to your specific needs.
-                </li>
-              </ul>
-              <h2>How It Works</h2>
-              <p>
-                <strong>Login:</strong> Use your registered email and password to access your account securely. We verify your credentials against our encrypted database to ensure the highest level of protection.
-              </p>
-              <p>
-                <strong>Signup:</strong> Creating a new account is straightforward. Provide your name, email, and a secure password, and we'll store your details safely in our MongoDB database.
-              </p>
-              <h2>Our Commitment to Privacy</h2>
-              <p>
-                Your privacy is a priority. We never share your personal information with third parties. With our MongoDB-backed authentication system, your data remains confidential and protected.
-              </p>
-              <p>
-                Join us today and experience the seamless and secure login and signup process brought to you by [Your App Name]!
-              </p>
-            </div>
-          </div>
-        </div>
+    <div className="about-page">
+      <div className="about-header">
+        <h1>Cloud Deck</h1>
+        <p>A comprehensive, secure, and intuitive Cloud Storage solution designed to protect and streamline your cloud storage experience.</p>
+      </div>
+
+      <div className="features-grid">
+        <FeatureCard
+          icon={ShieldCheck}
+          title="Uncompromising Security"
+          description="Advanced encryption and rigorous security protocols safeguard your sensitive data throughout the authentication process."
+        />
+        <FeatureCard
+          icon={UserPlus}
+          title="User-Friendly Design"
+          description="Intuitive interfaces ensure a smooth, hassle-free login and signup experience for users of all technical backgrounds."
+        />
+        <FeatureCard
+          icon={Database}
+          title="Reliable Infrastructure"
+          description="Powered by robust database technologies, delivering scalable, performant, and redundant user management."
+        />
+        <FeatureCard
+          icon={Palette}
+          title="Flexible Customization"
+          description="Easily integrate and adapt our authentication system to meet the unique requirements of your specific project."
+        />
+      </div>
+
+      <div className="about-footer">
+        <p>Experience cloud storage authentication reimagined – secure, simple, and sophisticated.</p>
       </div>
     </div>
   );

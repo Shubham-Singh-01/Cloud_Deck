@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import './Style.css';
 
 const Signup = () => {
     const [credentials, setCredentials] = useState({
@@ -31,9 +32,8 @@ const Signup = () => {
             const json = await response.json();
             console.log(json);
 
-            // Save the auth token and redirect
             localStorage.setItem('token', json.authtoken);
-            navigate("/");
+            navigate("/Start");
         } else {
             alert("Failed to create user");
         }
@@ -44,27 +44,64 @@ const Signup = () => {
     };
 
     return (
-        <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: "80vh" }}>
-            <form onSubmit={handleSubmit} className="w-50">
-                <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Name</label>
-                    <input type="text" className="form-control" id="name" name="name" onChange={onChange} aria-describedby="emailHelp" />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email address</label>
-                    <input type="email" className="form-control" id="email" onChange={onChange} name="email" aria-describedby="emailHelp" />
-                    <div id="emailHelp" className="form-text">We'll never share your email with anyone else.</div>
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="password" className="form-label">Password</label>
-                    <input type="password" className="form-control" name="password" id="password" onChange={onChange} minLength={8} required/>
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="cpassword" className="form-label">Confirm Password</label>
-                    <input type="password" className="form-control" name="cpassword" id="cpassword" onChange={onChange} minLength={8} required/>
-                </div>
-                <button type="submit" className="btn btn-primary">Submit</button>
-            </form>
+        <div className="container cloud-bg d-flex justify-content-center align-items-center" style={{ minHeight: "100vh" }}>
+            <div className="form-container animate-fade-in">
+                <h2 className="text-center mb-4">Create Your Account</h2>
+                <form onSubmit={handleSubmit}>
+                    <div className="form-group">
+                        <label htmlFor="name" className="form-label">Full Name</label>
+                        <input 
+                            type="text" 
+                            className="form-control" 
+                            id="name" 
+                            name="name" 
+                            onChange={onChange} 
+                            required 
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="email" className="form-label">Email address</label>
+                        <input 
+                            type="email" 
+                            className="form-control" 
+                            id="email" 
+                            onChange={onChange} 
+                            name="email" 
+                            aria-describedby="emailHelp" 
+                            required 
+                        />
+                        <small id="emailHelp" className="form-text">We'll never share your email with anyone else.</small>
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="password" className="form-label">Password</label>
+                        <input 
+                            type="password" 
+                            className="form-control" 
+                            name="password" 
+                            id="password" 
+                            onChange={onChange} 
+                            minLength={8} 
+                            required
+                        />
+                    </div>
+                    <div className="form-group">
+                        <label htmlFor="cpassword" className="form-label">Confirm Password</label>
+                        <input 
+                            type="password" 
+                            className="form-control" 
+                            name="cpassword" 
+                            id="cpassword" 
+                            onChange={onChange} 
+                            minLength={8} 
+                            required
+                        />
+                    </div>
+                    <button type="submit" className="btn btn-primary w-100 mt-3">Sign Up</button>
+                    <div className="text-center mt-3">
+                        <small>Already have an account? <Link to="/login" className="text-primary">Login</Link></small>
+                    </div>
+                </form>
+            </div>
         </div>
     );
 };
