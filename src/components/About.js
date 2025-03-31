@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShieldCheck, UserPlus, Database, Palette } from 'lucide-react';
-import './Style.css';
+import '../Styles/About.css';
 
 const About = () => {
   const FeatureCard = ({ icon: Icon, title, description }) => (

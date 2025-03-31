@@ -1,0 +1,301 @@
+/* Navbar.css */
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.5rem 0.75rem; /* Match nav-link padding */
+  margin-right: 0.75rem; /* Match nav-item margin */
+  flex-shrink: 0;
+  min-width: fit-content;
+  height: 100%;
+}
+
+.logo-icon {
+  width: 32px; /* Reduced from 50px to better match navigation height */
+  height: 32px;
+  color: #4c6ef5;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.logo-text {
+  font-size: 1.25rem; /* Slightly reduced from 1.5rem */
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: #1a1a1a;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 2; /* Ensure vertical alignment */
+}
+
+/* Add this to ensure consistent alignment */
+.cloud-navbar-nav {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.cloud-navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.cloud-navbar {
+  background: #ffffff;
+  padding: 1rem 2rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.cloud-navbar-container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.cloud-navbar-collapse {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.cloud-navbar-nav {
+  margin-right: auto;
+  display: flex;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.cloud-navbar-nav .nav-item {
+  margin: 0 0.75rem;
+}
+
+.cloud-navbar-nav .nav-link {
+  color: #333;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.cloud-navbar-nav .nav-link:hover {
+  color: #6366f1;
+}
+
+.cloud-navbar-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.btn {
+  padding: 0.6rem 1.5rem;
+  border-radius: 6px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.btn-login {
+  color: #333;
+  margin-right: 0.75rem;
+}
+
+.btn-login:hover {
+  color: #6366f1;
+}
+
+.btn-signup {
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+}
+
+.btn-signup:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(99, 102, 241, 0.35);
+}
+
+.user-menu {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.user-profile:hover {
+  background-color: #f5f7ff;
+}
+
+.user-name {
+  color: #333;
+  margin-right: 0.75rem;
+  font-weight: 500;
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  width: 200px;
+  padding: 0.75rem 0;
+  margin-top: 0.5rem;
+  display: none;
+  z-index: 1001;
+}
+
+.user-menu:hover .dropdown-menu {
+  display: block;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 0.6rem 1.25rem;
+  color: #333;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.dropdown-menu a:hover {
+  background-color: #f5f7ff;
+  color: #6366f1;
+}
+
+.dropdown-menu hr {
+  border: none;
+  border-top: 1px solid #f0f0f0;
+  margin: 0.5rem 0;
+}
+
+.cloud-navbar-toggler {
+  display: none;
+  background: transparent;
+  border: none;
+  width: 40px;
+  height: 40px;
+  padding: 5px;
+  position: relative;
+  cursor: pointer;
+}
+
+.toggler-icon,
+.toggler-icon::before,
+.toggler-icon::after {
+  content: "";
+  display: block;
+  background-color: #333;
+  height: 2px;
+  width: 24px;
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.toggler-icon {
+  top: 19px;
+  left: 8px;
+}
+
+.toggler-icon::before {
+  top: -8px;
+  left: 0;
+}
+
+.toggler-icon::after {
+  bottom: -8px;
+  left: 0;
+}
+
+.cloud-navbar-toggler.expanded .toggler-icon {
+  background-color: transparent;
+}
+
+.cloud-navbar-toggler.expanded .toggler-icon::before {
+  transform: rotate(45deg);
+  top: 0;
+}
+
+.cloud-navbar-toggler.expanded .toggler-icon::after {
+  transform: rotate(-45deg);
+  bottom: 0;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+  .cloud-navbar-toggler {
+    display: block;
+    order: 1;
+  }
+
+  .cloud-navbar-collapse {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    padding: 1rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .cloud-navbar-collapse.show {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .cloud-navbar-nav {
+    flex-direction: column;
+    margin-bottom: 1rem;
+  }
+
+  .cloud-navbar-nav .nav-item {
+    margin: 0.25rem 0;
+  }
+
+  .cloud-navbar-actions {
+    justify-content: center;
+    margin-left: 0;
+  }
+
+  .user-menu .dropdown-menu {
+    position: static;
+    display: block;
+    box-shadow: none;
+    margin-top: 1rem;
+    width: 100%;
+  }
+}
