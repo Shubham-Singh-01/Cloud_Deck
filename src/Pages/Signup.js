@@ -1,7 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import "../Styles/LoginSignup.css";
+import AuthContext from "../Context/Auth/AuthContext";
 
 const Signup = () => {
   const [credentials, setCredentials] = useState({
@@ -13,37 +14,38 @@ const Signup = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { signup } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const { name, email, password, cpassword } = credentials;
 
+    // Form validation
     if (password !== cpassword) {
-      alert("Passwords do not match");
+      setErrors({ ...errors, cpassword: "Passwords do not match" });
+      return;
+    }
+
+    if (password.length < 8) {
+      setErrors({ ...errors, password: "Password must be at least 8 characters" });
       return;
     }
     
     setLoading(true); // Show loading state
     
-    // Original signup logic
-    const response = await fetch("http://localhost:5000/api/auth/createuser", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ name, email, password })
-    });
-
-    setLoading(false); // Hide loading state regardless of result
-    
-    if (response.ok) {
-      const json = await response.json();
-      console.log(json);
-
-      localStorage.setItem('token', json.authtoken);
-      navigate("/Start");
-    } else {
-      alert("Failed to create user");
+    try {
+      const result = await signup(name, email, password);
+      
+      if (result.success) {
+        navigate("/Start");
+      } else {
+        setErrors({ form: result.error || "Failed to create account" });
+      }
+    } catch (error) {
+      console.error("Signup error:", error);
+      setErrors({ form: "An error occurred. Please try again." });
+    } finally {
+      setLoading(false); // Hide loading state regardless of result
     }
   };
 
@@ -53,6 +55,9 @@ const Signup = () => {
     // Clear error when user starts typing
     if (errors[e.target.name]) {
       setErrors({ ...errors, [e.target.name]: null });
+    }
+    if (errors.form) {
+      setErrors({ ...errors, form: null });
     }
   };
 
@@ -64,6 +69,12 @@ const Signup = () => {
           <p className="auth-subtitle">Join us to get started</p>
         </div>
         
+        {errors.form && (
+          <div className="auth-form-error" style={{ marginBottom: '1rem', textAlign: 'center' }}>
+            {errors.form}
+          </div>
+        )}
+        
         <form onSubmit={handleSubmit}>
           <div className="auth-form-group">
             <label htmlFor="name" className="auth-form-label">
@@ -71,7 +82,7 @@ const Signup = () => {
             </label>
             <input
               type="text"
-              className="auth-form-input"
+              className={`auth-form-input ${errors.name ? "error" : ""}`}
               id="name"
               name="name"
               value={credentials.name}
@@ -79,6 +90,7 @@ const Signup = () => {
               placeholder="John Doe"
               required
             />
+            {errors.name && <div className="auth-form-error">{errors.name}</div>}
           </div>
           
           <div className="auth-form-group">
@@ -87,7 +99,7 @@ const Signup = () => {
             </label>
             <input
               type="email"
-              className="auth-form-input"
+              className={`auth-form-input ${errors.email ? "error" : ""}`}
               id="email"
               name="email"
               value={credentials.email}
@@ -95,6 +107,7 @@ const Signup = () => {
               placeholder="you@example.com"
               required
             />
+            {errors.email && <div className="auth-form-error">{errors.email}</div>}
           </div>
           
           <div className="auth-form-group">
@@ -103,7 +116,7 @@ const Signup = () => {
             </label>
             <input
               type="password"
-              className="auth-form-input"
+              className={`auth-form-input ${errors.password ? "error" : ""}`}
               id="password"
               name="password"
               value={credentials.password}
@@ -112,6 +125,7 @@ const Signup = () => {
               minLength={8}
               required
             />
+            {errors.password && <div className="auth-form-error">{errors.password}</div>}
             <small className="auth-form-hint">
               Use at least 8 characters with one uppercase letter, one lowercase letter, and one number
             </small>
@@ -123,7 +137,7 @@ const Signup = () => {
             </label>
             <input
               type="password"
-              className="auth-form-input"
+              className={`auth-form-input ${errors.cpassword ? "error" : ""}`}
               id="cpassword"
               name="cpassword"
               value={credentials.cpassword}
@@ -132,6 +146,7 @@ const Signup = () => {
               minLength={8}
               required
             />
+            {errors.cpassword && <div className="auth-form-error">{errors.cpassword}</div>}
           </div>
           
           <button

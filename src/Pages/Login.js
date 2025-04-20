@@ -1,38 +1,33 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { FaGoogle, FaGithub } from "react-icons/fa";
 import "../Styles/LoginSignup.css";
+import AuthContext from "../Context/Auth/AuthContext";
 
 const Login = () => {
   const [credentials, setCredentials] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   let navigate = useNavigate();
+  const { login } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true); // Show loading state
     
-    // Original login logic
-    const response = await fetch("http://localhost:5000/api/auth/Login", {
-      method: 'POST',
-      headers: {
-          'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({email: credentials.email, password: credentials.password})
-    });
-    
-    const json = await response.json();
-    console.log(json);
-    
-    setLoading(false); // Hide loading state regardless of result
-    
-    if (json.success){
-      localStorage.setItem('token', json.authtoken); 
-      navigate("/Start");
-    }
-    else{
-      alert("Invalid credentials");
+    try {
+      const result = await login(credentials.email, credentials.password);
+      
+      if (result.success) {
+        navigate("/Start");
+      } else {
+        setErrors({ form: result.error || "Invalid credentials" });
+      }
+    } catch (error) {
+      console.error("Login error:", error);
+      setErrors({ form: "An error occurred. Please try again." });
+    } finally {
+      setLoading(false); // Hide loading state regardless of result
     }
   };
 
@@ -42,6 +37,9 @@ const Login = () => {
     // Clear error when user starts typing
     if (errors[e.target.name]) {
       setErrors({ ...errors, [e.target.name]: null });
+    }
+    if (errors.form) {
+      setErrors({ ...errors, form: null });
     }
   };
 

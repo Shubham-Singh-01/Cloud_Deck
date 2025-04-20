@@ -1,18 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import "../Styles/Navbar.css";
+import AuthContext from "../Context/Auth/AuthContext";
 
-const Navbar = ({ isLoggedIn, userName }) => {
+const Navbar = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const { isAuthenticated, user, logout } = useContext(AuthContext);
 
   const toggleNavbar = () => {
     setIsExpanded(!isExpanded);
   };
 
+  const handleLogout = () => {
+    logout();
+  };
+
   return (
     <nav className="cloud-navbar">
       <div className="cloud-navbar-container">
-        <a href="/" className="logo-link">
+        <Link to="/" className="logo-link">
           <div className="logo-container">
             <div className="logo-icon">
               <svg
@@ -30,7 +36,7 @@ const Navbar = ({ isLoggedIn, userName }) => {
             </div>
             <h3 className="logo-text">Cloud Deck</h3>
           </div>
-        </a>
+        </Link>
         <button
           className={`cloud-navbar-toggler ${isExpanded ? "expanded" : ""}`}
           type="button"
@@ -52,6 +58,13 @@ const Navbar = ({ isLoggedIn, userName }) => {
                 Home
               </Link>
             </li>
+            {isAuthenticated && (
+              <li className="nav-item">
+                <Link className="nav-link" to="/start">
+                  Start
+                </Link>
+              </li>
+            )}
             <li className="nav-item">
               <Link className="nav-link" to="/pricing">
                 Pricing
@@ -75,7 +88,7 @@ const Navbar = ({ isLoggedIn, userName }) => {
           </ul>
 
           <div className="cloud-navbar-actions">
-            {!isLoggedIn ? (
+            {!isAuthenticated ? (
               <>
                 <Link className="btn btn-login" to="/login">
                   Log In
@@ -87,9 +100,9 @@ const Navbar = ({ isLoggedIn, userName }) => {
             ) : (
               <div className="user-menu">
                 <div className="user-profile">
-                  <span className="user-name">{userName}</span>
+                  <span className="user-name">{user?.name}</span>
                   <div className="user-avatar">
-                    {userName ? userName.charAt(0).toUpperCase() : "U"}
+                    {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
                   </div>
                 </div>
                 <div className="dropdown-menu">
@@ -98,7 +111,7 @@ const Navbar = ({ isLoggedIn, userName }) => {
                   <Link to="/settings">Settings</Link>
                   <Link to="/storage">Storage Usage</Link>
                   <hr />
-                  <Link to="/logout">Log Out</Link>
+                  <Link to="/" onClick={handleLogout}>Log Out</Link>
                 </div>
               </div>
             )}
