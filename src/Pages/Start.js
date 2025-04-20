@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
   Trash2, Upload, FileText, Search, Filter, Grid, List, Download, Eye, Edit,
   Share, Star, StarOff, Clock, Calendar, FolderPlus, Tag, X, ChevronDown,
@@ -6,46 +6,12 @@ import {
   FileSymlink, MoreHorizontal, AlertTriangle, FolderOpen, MessageCircle,
 } from 'lucide-react';
 import '../Styles/Start.css';
-
-// Mock data (unchanged)
-const mockDocuments = [
-  {
-    id: '1',
-    name: 'Project Proposal.pdf',
-    type: 'pdf',
-    size: '2.4 MB',
-    uploadDate: '2023-10-01',
-    lastModified: '2023-10-05',
-    tags: ['proposal', 'urgent'],
-    favorite: true,
-    createdBy: 'John Doe',
-    permissions: 'owner',
-    folder: 'Work',
-    version: '1.2',
-  },
-  // Add more mock documents as needed
-];
-
-const mockFolders = [
-  { id: '1', name: 'Work', count: 5 },
-  { id: '2', name: 'Personal', count: 3 },
-];
-
-const mockTags = ['urgent', 'proposal', 'draft', 'review'];
-
-const mockActivities = [
-  {
-    id: '1',
-    action: 'uploaded',
-    document: 'Project Proposal.pdf',
-    user: 'John Doe',
-    time: '2 hours ago',
-  },
-  // Add more mock activities as needed
-];
+import api from '../utils/api' // Import centralized API instance
+import AuthContext from '../Context/Auth/AuthContext';
 
 const Start = () => {
-  const [documents, setDocuments] = useState(mockDocuments);
+  const { user, isAuthenticated } = useContext(AuthContext);
+  const [documents, setDocuments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState('list');
   const [selectedFile, setSelectedFile] = useState(null);
@@ -64,11 +30,11 @@ const Start = () => {
   const [tagInput, setTagInput] = useState('');
   const [isTagDropdownOpen, setIsTagDropdownOpen] = useState(false);
   const [showFileDetails, setShowFileDetails] = useState(false);
-  const [folders, setFolders] = useState(mockFolders);
+  const [folders, setFolders] = useState([]);
   const [showNewTagModal, setShowNewTagModal] = useState(false);
   const [newTagName, setNewTagName] = useState('');
-  const [availableTags, setAvailableTags] = useState(mockTags);
-  const [activities, setActivities] = useState(mockActivities);
+  const [availableTags, setAvailableTags] = useState([]);
+  const [activities, setActivities] = useState([]);
   const [isUploadDropzoneActive, setIsUploadDropzoneActive] = useState(false);
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState([]);
@@ -77,7 +43,54 @@ const Start = () => {
   const fileInputRef = useRef(null);
   const uploadDropzoneRef = useRef(null);
 
-  // Filter documents
+  const API_URL = process.env.REACT_APP_API_URL + '/api/uploads';
+
+  // Fetch documents on mount
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const response = await api.get(`${API_URL}/filter`);
+        setDocuments(response.data);
+        // Extract unique folders and tags
+        const uniqueFolders = [
+          ...new Set(response.data.map((doc) => doc.folder)),
+        ].map((name, index) => ({ id: String(index + 1), name, count: 0 }));
+        setFolders(uniqueFolders);
+        const uniqueTags = [
+          ...new Set(response.data.flatMap((doc) => doc.tags)),
+        ];
+        setAvailableTags(uniqueTags);
+      } catch (error) {
+        showNotification('error', 'Failed to fetch documents');
+      }
+    };
+    if (isAuthenticated) {
+      fetchDocuments();
+    }
+  }, [isAuthenticated, API_URL]);
+
+  // Filter and sort documents
+  useEffect(() => {
+    const fetchFilteredDocuments = async () => {
+      try {
+        const params = new URLSearchParams({
+          search: searchTerm,
+          folder: activeFolder,
+          tags: selectedTags.join(','),
+          sortBy,
+        });
+        const response = await api.get(`${API_URL}/filter?${params}`);
+        setDocuments(response.data);
+      } catch (error) {
+        showNotification('error', 'Failed to fetch documents');
+      }
+    };
+    if (isAuthenticated) {
+      fetchFilteredDocuments();
+    }
+  }, [searchTerm, activeFolder, selectedTags, sortBy, isAuthenticated, API_URL]);
+
+  // Filter documents (client-side for UI responsiveness)
   const filteredDocuments = documents.filter((doc) => {
     const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFolder = activeFolder === 'All Files' || doc.folder === activeFolder;
@@ -86,7 +99,7 @@ const Start = () => {
     return matchesSearch && matchesFolder && matchesTags;
   });
 
-  // Sort documents
+  // Sort documents (client-side fallback)
   const sortedDocuments = [...filteredDocuments].sort((a, b) => {
     switch (sortBy) {
       case 'nameAsc':
@@ -106,63 +119,61 @@ const Start = () => {
     }
   });
 
-  // Simulate upload progress
-  useEffect(() => {
-    let interval;
-    if (uploading && uploadProgress < 100) {
-      interval = setInterval(() => {
-        setUploadProgress((prev) => {
-          const newProgress = prev + 10;
-          if (newProgress >= 100) {
-            clearInterval(interval);
-            setTimeout(() => {
-              setUploading(false);
-              setUploadProgress(0);
-              showNotification('success', 'File uploaded successfully');
-            }, 500);
-          }
-          return newProgress;
-        });
-      }, 300);
-    }
-    return () => clearInterval(interval);
-  }, [uploading, uploadProgress]);
-
   // Handle file upload
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const files = e.target.files;
     if (files && files.length > 0) {
       setUploading(true);
       setUploadProgress(0);
 
-      setTimeout(() => {
-        const newDocuments = Array.from(files).map((file, index) => ({
-          id: (documents.length + index + 1).toString(),
-          name: file.name,
-          type: file.name.split('.').pop()?.toLowerCase() || 'unknown',
-          size: `${(file.size / (1024 * 1024)).toFixed(1)} MB`,
-          uploadDate: new Date().toISOString().split('T')[0],
-          lastModified: new Date().toISOString().split('T')[0],
-          tags: [],
-          favorite: false,
-          createdBy: 'Current User',
-          permissions: 'owner',
-          folder: activeFolder !== 'All Files' ? activeFolder : 'Uncategorized',
-          version: '1.0',
-        }));
+      const formData = new FormData();
+      Array.from(files).forEach((file) => {
+        formData.append('files', file);
+      });
 
-        setDocuments([...documents, ...newDocuments]);
+      try {
+        const response = await api.post(`${API_URL}/upload`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+          onUploadProgress: (progressEvent) => {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            setUploadProgress(percentCompleted);
+          },
+        });
 
-        const newActivities = Array.from(files).map((file, index) => ({
-          id: (activities.length + index + 1).toString(),
-          action: 'uploaded',
-          document: file.name,
-          user: 'Current User',
-          time: 'just now',
-        }));
+        setDocuments([...response.data.documents, ...documents]);
+        setActivities([
+          ...response.data.documents.map((doc) => ({
+            id: String(activities.length + 1),
+            action: 'uploaded',
+            document: doc.name,
+            user: user?.name || 'Current User',
+            time: 'just now',
+          })),
+          ...activities,
+        ]);
+        showNotification('success', 'Files uploaded successfully');
 
-        setActivities([...newActivities, ...activities]);
-      }, 3000);
+        // Update folders
+        const uniqueFolders = [
+          ...new Set([...documents, ...response.data.documents].map((doc) => doc.folder)),
+        ].map((name, index) => ({ id: String(index + 1), name, count: 0 }));
+        setFolders(uniqueFolders);
+
+        // Update tags
+        const uniqueTags = [
+          ...new Set([...documents, ...response.data.documents].flatMap((doc) => doc.tags)),
+        ];
+        setAvailableTags(uniqueTags);
+      } catch (error) {
+        showNotification('error', 'Failed to upload files');
+      } finally {
+        setUploading(false);
+        setUploadProgress(0);
+      }
     }
   };
 
@@ -192,62 +203,109 @@ const Start = () => {
   };
 
   // Delete document
-  const deleteDocument = (id) => {
-    setDocuments(documents.filter((doc) => doc.id !== id));
-    showNotification('info', 'Document deleted');
-
-    const docName = documents.find((doc) => doc.id === id)?.name;
-    if (docName) {
+  const deleteDocument = async (id) => {
+    try {
+      const response = await api.delete(`${API_URL}/${id}`);
+      setDocuments(documents.filter((doc) => doc._id !== id));
       setActivities([
         {
-          id: (activities.length + 1).toString(),
+          id: String(activities.length + 1),
           action: 'deleted',
-          document: docName,
-          user: 'Current User',
+          document: documents.find((doc) => doc._id === id)?.name,
+          user: user?.name || 'Current User',
           time: 'just now',
         },
         ...activities,
       ]);
+      showNotification('info', response.data.message);
+    } catch (error) {
+      showNotification('error', 'Failed to delete document');
+    }
+  };
+
+  // Download document
+  const downloadDocument = async (id, name) => {
+    try {
+      const response = await api.get(`${API_URL}/download/${id}`, {
+        responseType: 'blob',
+      });
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = name;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      showNotification('success', 'File downloaded');
+    } catch (error) {
+      showNotification('error', 'Failed to download file');
+    }
+  };
+
+  // Update document (e.g., favorite, tags)
+  const updateDocument = async (id, updates) => {
+    try {
+      const response = await api.put(`${API_URL}/${id}`, updates);
+      setDocuments(
+        documents.map((doc) =>
+          doc._id === id ? response.data.document : doc
+        )
+      );
+      showNotification('success', 'Document updated');
+    } catch (error) {
+      showNotification('error', 'Failed to update document');
     }
   };
 
   // Handle bulk actions
-  const handleBulkAction = (action) => {
+  const handleBulkAction = async (action) => {
     if (selectedDocuments.length === 0) return;
 
     switch (action) {
       case 'delete':
         const docNames = selectedDocuments.map(
-          (id) => documents.find((doc) => doc.id === id)?.name
+          (id) => documents.find((doc) => doc._id === id)?.name
         );
-        setDocuments(documents.filter((doc) => !selectedDocuments.includes(doc.id)));
-        showNotification('info', `${selectedDocuments.length} documents deleted`);
-        setActivities([
-          {
-            id: (activities.length + 1).toString(),
-            action: 'deleted multiple documents',
-            document: docNames.filter(Boolean).join(', '),
-            user: 'Current User',
-            time: 'just now',
-          },
-          ...activities,
-        ]);
+        try {
+          await Promise.all(
+            selectedDocuments.map((id) => api.delete(`${API_URL}/${id}`))
+          );
+          setDocuments(documents.filter((doc) => !selectedDocuments.includes(doc._id)));
+          showNotification('info', `${selectedDocuments.length} documents deleted`);
+          setActivities([
+            {
+              id: String(activities.length + 1),
+              action: 'deleted multiple documents',
+              document: docNames.filter(Boolean).join(', '),
+              user: user?.name || 'Current User',
+              time: 'just now',
+            },
+            ...activities,
+          ]);
+        } catch (error) {
+          showNotification('error', 'Failed to delete documents');
+        }
         break;
       case 'favorite':
-        setDocuments(
-          documents.map((doc) =>
-            selectedDocuments.includes(doc.id) ? { ...doc, favorite: true } : doc
-          )
-        );
-        showNotification('success', `${selectedDocuments.length} documents marked as favorite`);
+        try {
+          await Promise.all(
+            selectedDocuments.map((id) => updateDocument(id, { favorite: true }))
+          );
+          showNotification('success', `${selectedDocuments.length} documents marked as favorite`);
+        } catch (error) {
+          showNotification('error', 'Failed to update documents');
+        }
         break;
       case 'unfavorite':
-        setDocuments(
-          documents.map((doc) =>
-            selectedDocuments.includes(doc.id) ? { ...doc, favorite: false } : doc
-          )
-        );
-        showNotification('info', `${selectedDocuments.length} documents removed from favorites`);
+        try {
+          await Promise.all(
+            selectedDocuments.map((id) => updateDocument(id, { favorite: false }))
+          );
+          showNotification('info', `${selectedDocuments.length} documents removed from favorites`);
+        } catch (error) {
+          showNotification('error', 'Failed to update documents');
+        }
         break;
       default:
         break;
@@ -276,26 +334,22 @@ const Start = () => {
       setSelectedDocuments([]);
       setShowBulkActions(false);
     } else {
-      setSelectedDocuments(sortedDocuments.map((doc) => doc.id));
+      setSelectedDocuments(sortedDocuments.map((doc) => doc._id));
       setShowBulkActions(true);
     }
   };
 
   // Toggle favorite
-  const toggleFavorite = (id) => {
-    setDocuments(
-      documents.map((doc) => (doc.id === id ? { ...doc, favorite: !doc.favorite } : doc))
-    );
-
-    const doc = documents.find((d) => d.id === id);
+  const toggleFavorite = async (id) => {
+    const doc = documents.find((d) => d._id === id);
     if (doc) {
-      const action = doc.favorite ? 'removed from favorites' : 'marked as favorite';
+      await updateDocument(id, { favorite: !doc.favorite });
       setActivities([
         {
-          id: (activities.length + 1).toString(),
-          action,
+          id: String(activities.length + 1),
+          action: doc.favorite ? 'removed from favorites' : 'marked as favorite',
           document: doc.name,
-          user: 'Current User',
+          user: user?.name || 'Current User',
           time: 'just now',
         },
         ...activities,
@@ -307,7 +361,7 @@ const Start = () => {
   const createNewFolder = () => {
     if (newFolderName.trim()) {
       const newFolder = {
-        id: (folders.length + 1).toString(),
+        id: String(folders.length + 1),
         name: newFolderName.trim(),
         count: 0,
       };
@@ -330,27 +384,24 @@ const Start = () => {
   };
 
   // Add tag to document
-  const addTagToDocument = (docId, tag) => {
-    setDocuments(
-      documents.map((doc) => {
-        if (doc.id === docId && !doc.tags.includes(tag)) {
-          return { ...doc, tags: [...doc.tags, tag] };
-        }
-        return doc;
-      })
-    );
+  const addTagToDocument = async (docId, tag) => {
+    const doc = documents.find((d) => d._id === docId);
+    if (doc && !doc.tags.includes(tag)) {
+      const updatedTags = [...doc.tags, tag];
+      await updateDocument(docId, { tags: updatedTags });
+      if (!availableTags.includes(tag)) {
+        setAvailableTags([...availableTags, tag]);
+      }
+    }
   };
 
   // Remove tag from document
-  const removeTagFromDocument = (docId, tag) => {
-    setDocuments(
-      documents.map((doc) => {
-        if (doc.id === docId) {
-          return { ...doc, tags: doc.tags.filter((t) => t !== tag) };
-        }
-        return doc;
-      })
-    );
+  const removeTagFromDocument = async (docId, tag) => {
+    const doc = documents.find((d) => d._id === docId);
+    if (doc) {
+      const updatedTags = doc.tags.filter((t) => t !== tag);
+      await updateDocument(docId, { tags: updatedTags });
+    }
   };
 
   // Toggle tag selection
@@ -601,9 +652,7 @@ const Start = () => {
                   {folders.map((folder) => (
                     <button
                       key={folder.id}
-                      className={`sidebar-item folder ${
-                        activeFolder === folder.name ? 'active' : ''
-                      }`}
+                      className={`sidebar-item folder ${activeFolder === folder.name ? 'active' : ''}`}
                       onClick={() => setActiveFolder(folder.name)}
                     >
                       <div className="folder-name">
@@ -712,51 +761,74 @@ const Start = () => {
 
               {/* Sort options */}
               <div className="sort-container">
-                <button className="sort-button">
+                <button
+                  className="sort-button"
+                  onClick={() => {
+                    const dropdown = document.querySelector('.sort-dropdown');
+                    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+                  }}
+                >
                   <Filter size={16} className="icon" />
                   <span>Sort</span>
                   <ChevronDown size={14} className="icon" />
                 </button>
-                <div className="sort-dropdown">
+                <div className="sort-dropdown" style={{ display: 'none' }}>
                   <button
                     className="sort-option"
-                    onClick={() => setSortBy('nameAsc')}
+                    onClick={() => {
+                      setSortBy('nameAsc');
+                      document.querySelector('.sort-dropdown').style.display = 'none';
+                    }}
                   >
                     Name (A-Z)
                   </button>
                   <button
                     className="sort-option"
-                    onClick={() => setSortBy('nameDesc')}
+                    onClick={() => {
+                      setSortBy('nameDesc');
+                      document.querySelector('.sort-dropdown').style.display = 'none';
+                    }}
                   >
                     Name (Z-A)
                   </button>
                   <button
                     className="sort-option"
-                    onClick={() => setSortBy('dateDesc')}
+                    onClick={() => {
+                      setSortBy('dateDesc');
+                      document.querySelector('.sort-dropdown').style.display = 'none';
+                    }}
                   >
                     Date (Newest)
                   </button>
                   <button
                     className="sort-option"
-                    onClick={() => setSortBy('dateAsc')}
+                    onClick={() => {
+                      setSortBy('dateAsc');
+                      document.querySelector('.sort-dropdown').style.display = 'none';
+                    }}
                   >
                     Date (Oldest)
                   </button>
                   <button
                     className="sort-option"
-                    onClick={() => setSortBy('sizeDesc')}
+                    onClick={() => {
+                      setSortBy('sizeDesc');
+                      document.querySelector('.sort-dropdown').style.display = 'none';
+                    }}
                   >
                     Size (Largest)
                   </button>
                   <button
                     className="sort-option"
-                    onClick={() => setSortBy('sizeAsc')}
+                    onClick={() => {
+                      setSortBy('sizeAsc');
+                      document.querySelector('.sort-dropdown').style.display = 'none';
+                    }}
                   >
                     Size (Smallest)
                   </button>
                 </div>
               </div>
-
               {/* View Mode Toggle */}
               <div className="view-toggle">
                 <button
@@ -847,13 +919,13 @@ const Start = () => {
                 </thead>
                 <tbody className="table-body">
                   {sortedDocuments.map((doc) => (
-                    <tr key={doc.id} className="table-row">
+                    <tr key={doc._id} className="table-row">
                       <td className="table-checkbox">
                         <input
                           type="checkbox"
                           className="checkbox"
-                          checked={selectedDocuments.includes(doc.id)}
-                          onChange={() => toggleDocumentSelection(doc.id)}
+                          checked={selectedDocuments.includes(doc._id)}
+                          onChange={() => toggleDocumentSelection(doc._id)}
                         />
                       </td>
                       <td className="table-cell">
@@ -888,7 +960,7 @@ const Start = () => {
                       </td>
                       <td className="table-cell">{doc.size}</td>
                       <td className="table-cell">
-                        <div className="file-modified">{doc.lastModified}</div>
+                        <div className="file-modified">{new Date(doc.lastModified).toLocaleDateString()}</div>
                         <div className="file-creator">by {doc.createdBy}</div>
                       </td>
                       <td className="table-cell">{getPermissionBadge(doc.permissions)}</td>
@@ -896,7 +968,7 @@ const Start = () => {
                         <div className="action-buttons">
                           <button
                             className="action-button favorite"
-                            onClick={() => toggleFavorite(doc.id)}
+                            onClick={() => toggleFavorite(doc._id)}
                             title={doc.favorite ? 'Remove from favorites' : 'Add to favorites'}
                           >
                             {doc.favorite ? (
@@ -914,19 +986,7 @@ const Start = () => {
                           </button>
                           <button
                             className="action-button download"
-                            onClick={() => {
-                              const url = URL.createObjectURL(
-                                new Blob([doc.name], { type: 'text/plain' })
-                              );
-                              const link = document.createElement('a');
-                              link.href = url;
-                              link.download = doc.name;
-                              document.body.appendChild(link);
-                              link.click();
-                              document.body.removeChild(link);
-                              URL.revokeObjectURL(url);
-                              showNotification('success', 'File downloaded');
-                            }}
+                            onClick={() => downloadDocument(doc._id, doc.name)}
                             title="Download"
                           >
                             <Download size={16} />
@@ -943,7 +1003,7 @@ const Start = () => {
                           </button>
                           <button
                             className="action-button link"
-                            onClick={() => createFileLink(doc.id)}
+                            onClick={() => createFileLink(doc._id)}
                             title="Create Link"
                           >
                             <FileSymlink size={16} />
@@ -951,30 +1011,28 @@ const Start = () => {
                           <div className="more-menu-container">
                             <button
                               className="action-button more"
-                              onClick={() =>
-                                setShowMoreMenu(showMoreMenu === doc.id ? null : doc.id)
-                              }
+                              onClick={() => setShowMoreMenu(showMoreMenu === doc._id ? null : doc._id)}
                               title="More actions"
                             >
                               <MoreHorizontal size={16} />
                             </button>
-                            {showMoreMenu === doc.id && (
-                              <div className="more-menu">
+                            {showMoreMenu === doc._id && (
+                              <div className="more-menu" style={{ position: 'absolute', zIndex: 1000 }}>
                                 <button
                                   className="more-menu-item"
-                                  onClick={() => handleMoreMenu(doc.id, 'rename')}
+                                  onClick={() => handleMoreMenu(doc._id, 'rename')}
                                 >
                                   Rename
                                 </button>
                                 <button
                                   className="more-menu-item"
-                                  onClick={() => handleMoreMenu(doc.id, 'move')}
+                                  onClick={() => handleMoreMenu(doc._id, 'move')}
                                 >
                                   Move
                                 </button>
                                 <button
                                   className="more-menu-item"
-                                  onClick={() => handleMoreMenu(doc.id, 'versionHistory')}
+                                  onClick={() => handleMoreMenu(doc._id, 'versionHistory')}
                                 >
                                   Version History
                                 </button>
@@ -983,7 +1041,7 @@ const Start = () => {
                           </div>
                           <button
                             className="action-button delete"
-                            onClick={() => deleteDocument(doc.id)}
+                            onClick={() => deleteDocument(doc._id)}
                             title="Delete"
                           >
                             <Trash2 size={16} />
@@ -1024,20 +1082,20 @@ const Start = () => {
           ) : (
             <div className="grid-container">
               {sortedDocuments.map((doc) => (
-                <div key={doc.id} className="grid-item">
+                <div key={doc._id} className="grid-item">
                   <div className="grid-item-header">
                     <div className="grid-checkbox">
                       <input
                         type="checkbox"
                         className="checkbox"
-                        checked={selectedDocuments.includes(doc.id)}
-                        onChange={() => toggleDocumentSelection(doc.id)}
+                        checked={selectedDocuments.includes(doc._id)}
+                        onChange={() => toggleDocumentSelection(doc._id)}
                       />
                     </div>
                     <div className="grid-favorite">
                       <button
                         className="favorite-button"
-                        onClick={() => toggleFavorite(doc.id)}
+                        onClick={() => toggleFavorite(doc._id)}
                       >
                         {doc.favorite ? (
                           <Star size={16} className="favorite-icon" />
@@ -1052,7 +1110,7 @@ const Start = () => {
                     {doc.name}
                   </h3>
                   <div className="grid-meta">
-                    {doc.size} • {doc.lastModified}
+                    {doc.size} • {new Date(doc.lastModified).toLocaleDateString()}
                   </div>
                   {doc.tags.length > 0 && (
                     <div className="grid-tags">
@@ -1076,19 +1134,7 @@ const Start = () => {
                     </button>
                     <button
                       className="action-button download"
-                      onClick={() => {
-                        const url = URL.createObjectURL(
-                          new Blob([doc.name], { type: 'text/plain' })
-                        );
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = doc.name;
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                        URL.revokeObjectURL(url);
-                        showNotification('success', 'File downloaded');
-                      }}
+                      onClick={() => downloadDocument(doc._id, doc.name)}
                       title="Download"
                     >
                       <Download size={16} />
@@ -1102,7 +1148,7 @@ const Start = () => {
                     </button>
                     <button
                       className="action-button link"
-                      onClick={() => createFileLink(doc.id)}
+                      onClick={() => createFileLink(doc._id)}
                       title="Create Link"
                     >
                       <FileSymlink size={16} />
@@ -1111,29 +1157,29 @@ const Start = () => {
                       <button
                         className="action-button more"
                         onClick={() =>
-                          setShowMoreMenu(showMoreMenu === doc.id ? null : doc.id)
+                          setShowMoreMenu(showMoreMenu === doc._id ? null : doc._id)
                         }
                         title="More actions"
                       >
                         <MoreHorizontal size={16} />
                       </button>
-                      {showMoreMenu === doc.id && (
+                      {showMoreMenu === doc._id && (
                         <div className="more-menu">
                           <button
                             className="more-menu-item"
-                            onClick={() => handleMoreMenu(doc.id, 'rename')}
+                            onClick={() => handleMoreMenu(doc._id, 'rename')}
                           >
                             Rename
                           </button>
                           <button
                             className="more-menu-item"
-                            onClick={() => handleMoreMenu(doc.id, 'move')}
+                            onClick={() => handleMoreMenu(doc._id, 'move')}
                           >
                             Move
                           </button>
                           <button
                             className="more-menu-item"
-                            onClick={() => handleMoreMenu(doc.id, 'versionHistory')}
+                            onClick={() => handleMoreMenu(doc._id, 'versionHistory')}
                           >
                             Version History
                           </button>
@@ -1142,7 +1188,7 @@ const Start = () => {
                     </div>
                     <button
                       className="action-button delete"
-                      onClick={() => deleteDocument(doc.id)}
+                      onClick={() => deleteDocument(doc._id)}
                       title="Delete"
                     >
                       <Trash2 size={16} />
@@ -1223,7 +1269,7 @@ const Start = () => {
 
       {/* File Details Sidebar */}
       {showFileDetails && selectedFile && (
-        <div className="file-details-overlay">
+        <div className="file-details-overlay" style={{ paddingTop: '80px' }}>
           <div className="file-details-sidebar">
             <div className="file-details-header">
               <div className="file-details-title-container">
@@ -1250,14 +1296,14 @@ const Start = () => {
                     <Calendar size={16} className="icon" />
                     Created
                   </span>
-                  <span className="property-value">{selectedFile.uploadDate}</span>
+                  <span className="property-value">{new Date(selectedFile.uploadDate).toLocaleDateString()}</span>
                 </div>
                 <div className="property-item">
                   <span className="property-label">
                     <Calendar size={16} className="icon" />
                     Modified
                   </span>
-                  <span className="property-value">{selectedFile.lastModified}</span>
+                  <span className="property-value">{new Date(selectedFile.lastModified).toLocaleDateString()}</span>
                 </div>
                 <div className="property-item">
                   <span className="property-label">Created by</span>
@@ -1291,7 +1337,7 @@ const Start = () => {
                     {tag}
                     <button
                       className="tag-remove"
-                      onClick={() => removeTagFromDocument(selectedFile.id, tag)}
+                      onClick={() => removeTagFromDocument(selectedFile._id, tag)}
                     >
                       <X size={12} />
                     </button>
@@ -1319,7 +1365,7 @@ const Start = () => {
                           key={tag}
                           className="tag-option"
                           onClick={() => {
-                            addTagToDocument(selectedFile.id, tag);
+                            addTagToDocument(selectedFile._id, tag);
                             setTagInput('');
                           }}
                         >
@@ -1331,7 +1377,7 @@ const Start = () => {
                     <div
                       className="create-tag"
                       onClick={() => {
-                        addTagToDocument(selectedFile.id, tagInput);
+                        addTagToDocument(selectedFile._id, tagInput);
                         setAvailableTags([...availableTags, tagInput]);
                         setTagInput('');
                         setIsTagDropdownOpen(false);
@@ -1370,19 +1416,7 @@ const Start = () => {
                 </button>
                 <button
                   className="action-button download full"
-                  onClick={() => {
-                    const url = URL.createObjectURL(
-                      new Blob([selectedFile.name], { type: 'text/plain' })
-                    );
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = selectedFile.name;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                    showNotification('success', 'File downloaded');
-                  }}
+                  onClick={() => downloadDocument(selectedFile._id, selectedFile.name)}
                 >
                   <Download size={16} className="icon" />
                   Download
@@ -1390,7 +1424,7 @@ const Start = () => {
                 <button
                   className="action-button delete full"
                   onClick={() => {
-                    deleteDocument(selectedFile.id);
+                    deleteDocument(selectedFile._id);
                     setShowFileDetails(false);
                   }}
                 >
@@ -1474,6 +1508,7 @@ const Start = () => {
             }
           }}
           tabIndex={-1}
+          style={{ paddingTop: '180px' }} // Offset to appear below navbar
         >
           <div className="preview-modal">
             <div className="preview-header">
@@ -1483,19 +1518,7 @@ const Start = () => {
               <div className="preview-actions">
                 <button
                   className="preview-button download"
-                  onClick={() => {
-                    const url = URL.createObjectURL(
-                      new Blob([previewFile.name], { type: 'text/plain' })
-                    );
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = previewFile.name;
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
-                    showNotification('success', 'File downloaded');
-                  }}
+                  onClick={() => downloadDocument(previewFile._id, previewFile.name)}
                   title="Download"
                 >
                   <Download size={18} />
@@ -1540,19 +1563,7 @@ const Start = () => {
                   </p>
                   <button
                     className="download-button"
-                    onClick={() => {
-                      const url = URL.createObjectURL(
-                        new Blob([previewFile.name], { type: 'text/plain' })
-                      );
-                      const link = document.createElement('a');
-                      link.href = url;
-                      link.download = previewFile.name;
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      URL.revokeObjectURL(url);
-                      showNotification('success', 'File downloaded');
-                    }}
+                    onClick={() => downloadDocument(previewFile._id, previewFile.name)}
                   >
                     Download to view
                   </button>
@@ -1566,9 +1577,7 @@ const Start = () => {
       {/* Notification */}
       {notification && (
         <div className="notification-container">
-          <div
-            className={`notification ${notification.type}`}
-          >
+          <div className={`notification ${notification.type}`}>
             {notification.type === 'success' && <CheckCircle size={20} />}
             {notification.type === 'error' && <AlertCircle size={20} />}
             {notification.type === 'warning' && <AlertTriangle size={20} />}

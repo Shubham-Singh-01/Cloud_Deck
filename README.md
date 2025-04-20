@@ -1,7 +1,7 @@
 <div align="center">
 
 # ☁️ CLOUD DECK 📝
-### *Your secure notebook in the cloud - accessible anywhere, anytime*
+### *Your secure uploads storage in the cloud - accessible anywhere, anytime*
 
 [![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
@@ -11,7 +11,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 
 ![Project Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-1.0.0-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-1.5.0-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 </div>
@@ -20,7 +20,8 @@
 
 ## 🌟 Overview
 
-**Cloud Deck** is a cutting-edge web application revolutionizing the cloud-storage experience with secure cloud synchronization. Built with the powerful MERN stack, this application empowers users to create, edit, organize, and access their data (notes, documents, etc,.) from any device with enterprise-grade security.
+| 🔐 **Secure Authentication** | Military-grade JWT-based authentication with encrypted password storage  |
+**Cloud Deck** is a cutting-edge web application revolutionizing the cloud-storage experience with secure cloud synchronization. Built with the powerful MERN stack, this application empowers users to create, edit, organize, and access their data (documents,uploads, etc,.) from any device with enterprise-grade security.
 
 <div align="center">
 
@@ -37,11 +38,11 @@
 | Feature | Description |
 |:-------:|:------------|
 | 🔐 **Secure Authentication** | Military-grade JWT-based authentication with encrypted password storage |
-| ☁️ **Cloud Sync** | Seamlessly access your notes on any device, anytime |
+| ☁️ **Cloud Sync** | Seamlessly access your uploads on any device, anytime |
 | 🏷️ **Smart Tags** | Powerful categorization system with custom tags for perfect organization |
 | 📱 **Responsive Design** | Elegant interface that adapts beautifully to any screen size |
 | ⚡ **Lightning Fast** | Optimized backend architecture for instantaneous data retrieval |
-| 🛡️ **Data Protection** | Your notes are protected with industry-standard security protocols |
+| 🛡️ **Data Protection** | Your uploads are protected with industry-standard security protocols |
 
 </div>
 
@@ -78,11 +79,14 @@ POST /api/auth/login       - Authenticate and receive JWT token
 POST /api/auth/getuser     - Get logged-in user details (protected)
 ```
 
-### 📝 Notes
+### 📝 Documents
 ```
-GET /api/notes             - Retrieve all notes for logged-in user
+GET    /api/uploads           - Retrieve all uploads for logged-in user
+POST   /api/uploads           - Create a new upload
+PUT    /api/uploads/:id       - Update an existing upload
+DELETE /api/uploads/:id       - Delete a upload
 ```
-*Additional endpoints for CRUD operations on notes (in active development)*
+*Additional endpoints for CRUD operations on documents (in active development)*
 
 ---
 
@@ -100,7 +104,7 @@ GET /api/notes             - Retrieve all notes for logged-in user
 
 ### Prerequisites
 - Node.js (v14+) and npm installed
-- MongoDB instance (local or Atlas cloud)
+- MongoDB instance (local)
 
 <div align="center">
 
@@ -110,7 +114,7 @@ GET /api/notes             - Retrieve all notes for logged-in user
 
 1️⃣ **Clone the repository**
 ```bash
-git clone https://github.com/yourusername/cloud-deck.git
+git clone https://github.com/Shubham-Singh-01/Cloud_Deck.git
 cd cloud-deck
 ```
 
@@ -137,18 +141,40 @@ npm run both
 ```
 CLOUD DECK/
 ├── 📁 backend/
-│   ├── 📁 middleware/  # Authentication middleware
-│   ├── 📁 models/      # MongoDB schemas
-│   ├── 📁 routes/      # API endpoints
-│   ├── 📄 db.js        # Database connection
-│   └── 📄 index.js     # Express server setup
-└── 📁 frontend/
-    ├── 📁 public/      # Static assets
-    └── 📁 src/
-        ├── 📁 components/  # React components
-        ├── 📁 context/     # Context API state management
-        ├── 📄 App.js       # Main application component
-        └── 📄 index.js     # Entry point
+│   ├── 📁 middleware/
+│   │   └── 📄 fetchuser.js            # Authentication middleware for validating user JWT tokens
+│   ├── 📁 models/
+│   │   ├── 📄 Document.js             # Schema for uploads storage and management
+│   │   └── 📄 User.js                 # User model with authentication methods
+│   ├── 📁 routes/
+│   │   ├── 📄 auth.js                 # Authentication endpoints (login, signup, etc.)
+│   │   └── 📄 uploads.js                # API endpoints for Documents CRUD operations
+│   ├── 📄 .env                        # Environment variables for backend configuration
+│   ├── 📄 db.js                       # Database connection and configuration
+│   └── 📄 index.js                    # Express server entry point
+├── 📁 src/
+│   ├── 📁 Context/
+│   │   └── 📁 Auth/
+│   │       └── 📄 AuthContext.js      # React context for authentication state management
+│   ├── 📁 Pages/
+│   │   ├── 📁 Routing/
+│   │   │   └── 📄 ProtectedRoute.js   # Component for securing routes requiring authentication
+│   │   ├── 📄 About.js                # About page component
+│   │   ├── 📄 Home.js                 # Home page component
+│   │   ├── 📄 Login.js                # Login page with authentication form
+│   │   ├── 📄 Navbar.js               # Navigation bar component
+│   │   ├── 📄 Signup.js               # User registration page
+│   │   └── 📄 Start.js                # Landing page component after Login
+│   ├── 📁 Styles/
+│   │   ├── 📄 About.css               # Styles for About page
+│   │   ├── 📄 Home.css                # Styles for Home page
+│   │   ├── 📄 LoginSignup.css         # Shared styles for login and signup forms
+│   │   ├── 📄 Navbar.css              # Styles for navigation component
+│   │   └── 📄 Start.css               # Styles for Start page
+│   └── 📁 utils/
+│       └── 📄 api.js                  # API utility functions for backend communication
+├── 📄 App.js                          # Main React application component
+└── 📄 index.js                        # React entry point
 ```
 
 ---
@@ -156,12 +182,12 @@ CLOUD DECK/
 ## 🔮 Roadmap: The Future of Cloud Deck
 
 - 📝 **Rich Text Editor** - Advanced formatting with markdown support
-- 👥 **Real-time Collaboration** - Share and co-edit notes with team members
+- 👥 **Real-time Collaboration** - Share and co-edit uploads with team members
 - 🌓 **Theme Customization** - Personalized dark/light modes and color schemes
 - 📱 **Cross-Platform App** - Native mobile experience using React Native
-- 📎 **File Attachments** - Seamless document and image integration
+- 📎 **File Attachments** - Seamless uploads and image integration
 - 🔍 **Intelligent Search** - Powerful full-text search with smart suggestions
-- 📊 **Analytics Dashboard** - Visualize your productivity and note-taking patterns
+- 📊 **Analytics Dashboard** - Visualize your productivity and upload-taking patterns
 
 ---
 
@@ -173,7 +199,7 @@ Released under the [MIT License](LICENSE) - Free to use and modify
 
 ## 🤝 Contributing
 
-Your contributions can make Cloud Deck even better! Check our [issues page](https://github.com/yourusername/cloud-deck/issues).
+Your contributions can make Cloud Deck even better! Check our [issues page](https://github.com/Shubham-Singh-01/Cloud_Deck/issues).
 
 ---
 

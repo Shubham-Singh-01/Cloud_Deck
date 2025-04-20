@@ -1,28 +1,43 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useContext } from 'react';
 import AuthContext from '../../Context/Auth/AuthContext';
+import { Loader } from 'lucide-react';
 
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, loading } = useContext(AuthContext);
+  const location = useLocation();
 
-  // Show loading state while checking authentication
   if (loading) {
     return (
-      <div className="auth-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <div className="auth-form-card" style={{ textAlign: 'center', padding: '2rem' }}>
-          <h3>Loading...</h3>
-          <p>Please wait while we verify your credentials</p>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh',
+          backgroundColor: '#f5f5f5',
+        }}
+      >
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '2rem',
+            backgroundColor: 'white',
+            borderRadius: '8px',
+            boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+          }}
+        >
+          <Loader size={32} className="animate-spin" />
+          <h3 style={{ marginTop: '1rem' }}>Verifying your credentials...</h3>
         </div>
       </div>
     );
   }
 
-  // Redirect to login if not authenticated
   if (!isAuthenticated) {
-    return <Navigate to="/login" />;
+    return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Render the protected component if authenticated
   return children;
 };
 
