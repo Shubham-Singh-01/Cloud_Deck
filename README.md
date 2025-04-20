@@ -1,7 +1,7 @@
 <div align="center">
 
 # ☁️ CLOUD DECK 📝
-### *Your secure uploads storage in the cloud - accessible anywhere, anytime*
+### *Your secure document storage in the cloud - accessible anywhere, anytime*
 
 [![React](https://img.shields.io/badge/React-18.3.1-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
