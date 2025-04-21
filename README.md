@@ -20,7 +20,6 @@
 
 ## 🌟 Overview
 
-| 🔐 **Secure Authentication** | Military-grade JWT-based authentication with encrypted password storage  |
 **Cloud Deck** is a cutting-edge web application revolutionizing the cloud-storage experience with secure cloud synchronization. Built with the powerful MERN stack, this application empowers users to create, edit, organize, and access their data (documents,uploads, etc,.) from any device with enterprise-grade security.
 
 <div align="center">
