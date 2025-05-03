@@ -13,7 +13,8 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true); // Show loading state
+    setLoading(true);
+    setErrors({});
     
     try {
       const result = await login(credentials.email, credentials.password);
@@ -21,13 +22,34 @@ const Login = () => {
       if (result.success) {
         navigate("/Start");
       } else {
-        setErrors({ form: result.error || "Invalid credentials" });
+        // Handle specific error messages from API
+        if (result.errors && Array.isArray(result.errors)) {
+          // Handle validation errors
+          const errorMap = {};
+          result.errors.forEach(err => {
+            errorMap[err.param] = err.msg;
+          });
+          setErrors(errorMap);
+        } else {
+          // Handle general error message
+          setErrors({ form: result.error || "Invalid credentials" });
+        }
       }
     } catch (error) {
       console.error("Login error:", error);
-      setErrors({ form: "An error occurred. Please try again." });
+      // Handle Axios error responses
+      if (error.response) {
+        const { data } = error.response;
+        if (data.error) {
+          setErrors({ form: data.error });
+        } else {
+          setErrors({ form: "Authentication failed. Please check your credentials." });
+        }
+      } else {
+        setErrors({ form: "Unable to connect to server. Please try again later." });
+      }
     } finally {
-      setLoading(false); // Hide loading state regardless of result
+      setLoading(false);
     }
   };
 

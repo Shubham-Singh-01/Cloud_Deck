@@ -18,20 +18,34 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({});
     const { name, email, password, cpassword } = credentials;
 
-    // Form validation
+    // Client-side validation
+    let hasErrors = false;
+    const newErrors = {};
+
+    if (name.length < 5) {
+      newErrors.name = "Name must be at least 5 characters";
+      hasErrors = true;
+    }
+
     if (password !== cpassword) {
-      setErrors({ ...errors, cpassword: "Passwords do not match" });
-      return;
+      newErrors.cpassword = "Passwords do not match";
+      hasErrors = true;
     }
 
     if (password.length < 8) {
-      setErrors({ ...errors, password: "Password must be at least 8 characters" });
+      newErrors.password = "Password must be at least 8 characters";
+      hasErrors = true;
+    }
+
+    if (hasErrors) {
+      setErrors(newErrors);
       return;
     }
     
-    setLoading(true); // Show loading state
+    setLoading(true);
     
     try {
       const result = await signup(name, email, password);
@@ -39,13 +53,41 @@ const Signup = () => {
       if (result.success) {
         navigate("/Start");
       } else {
-        setErrors({ form: result.error || "Failed to create account" });
+        // Handle specific error messages from API
+        if (result.errors && Array.isArray(result.errors)) {
+          // Parse validation errors from express-validator
+          const errorMap = {};
+          result.errors.forEach(err => {
+            errorMap[err.param] = err.msg;
+          });
+          setErrors(errorMap);
+        } else if (result.error && result.error.includes("email already exists")) {
+          // Specific error for duplicate email
+          setErrors({ email: "This email is already registered" });
+        } else {
+          // General error message
+          setErrors({ form: result.error || "Failed to create account" });
+        }
       }
     } catch (error) {
       console.error("Signup error:", error);
-      setErrors({ form: "An error occurred. Please try again." });
+      // Handle Axios error responses
+      if (error.response) {
+        const { data } = error.response;
+        if (data.error) {
+          if (data.error.includes("email already exists")) {
+            setErrors({ email: "This email is already registered" });
+          } else {
+            setErrors({ form: data.error });
+          }
+        } else {
+          setErrors({ form: "Registration failed. Please try again." });
+        }
+      } else {
+        setErrors({ form: "Unable to connect to server. Please try again later." });
+      }
     } finally {
-      setLoading(false); // Hide loading state regardless of result
+      setLoading(false);
     }
   };
 
@@ -89,6 +131,7 @@ const Signup = () => {
               onChange={onChange}
               placeholder="John Doe"
               required
+              minLength={5}
             />
             {errors.name && <div className="auth-form-error">{errors.name}</div>}
           </div>

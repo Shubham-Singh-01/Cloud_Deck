@@ -23,6 +23,7 @@ export const AuthProvider = ({ children }) => {
           }
         } catch (error) {
           console.error('Error checking authentication:', error);
+          localStorage.removeItem('token');
           setIsAuthenticated(false);
           setUser(null);
         }
@@ -45,6 +46,10 @@ export const AuthProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Login error:', error);
+      // Return error response in a structured way
+      if (error.response && error.response.data) {
+        return { success: false, ...error.response.data };
+      }
       return { success: false, error: 'An error occurred during login' };
     }
   };
@@ -62,6 +67,10 @@ export const AuthProvider = ({ children }) => {
       return response.data;
     } catch (error) {
       console.error('Signup error:', error);
+      // Return error response in a structured way
+      if (error.response && error.response.data) {
+        return { success: false, ...error.response.data };
+      }
       return { success: false, error: 'An error occurred during signup' };
     }
   };
