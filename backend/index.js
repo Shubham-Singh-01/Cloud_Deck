@@ -21,3 +21,11 @@ app.use('/api/uploads', require('./routes/Uploads'));
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+const path = require('path');
+
+// Serve static React files
+app.use(express.static(path.join(__dirname, '..', 'build')));
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'build', 'index.html'));
+});

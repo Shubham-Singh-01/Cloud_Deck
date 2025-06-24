@@ -1,7 +1,7 @@
 {
-  "name": "inotebook-backend",
+  "name": "cloud-deck-backend",
   "version": "1.0.0",
-  "description": "\"iNotebook - Your notebook on the cloud\",",
+  "description": "\"Cloud-Deck - Your Data-Storage Deck on the cloud\",",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
