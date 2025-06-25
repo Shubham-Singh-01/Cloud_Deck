@@ -1,56 +1,20 @@
 {
   "name": "cloud-deck",
-  "version": "0.1.0",
-  "private": true,
-  "dependencies": {
-    "@testing-library/jest-dom": "^5.17.0",
-    "@testing-library/react": "^13.4.0",
-    "@testing-library/user-event": "^13.5.0",
-    "axios": "^1.8.4",
-    "bcryptjs": "^2.4.3",
-    "concurrently": "^8.2.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.5.0",
-    "express": "^4.21.2",
-    "express-validator": "^7.2.1",
-    "icons": "^1.0.0",
-    "jsonwebtoken": "^9.0.2",
-    "lucide": "^0.485.0",
-    "lucide-react": "^0.485.0",
-    "mongoose": "^7.8.6",
-    "multer": "^1.4.5-lts.2",
-    "react": "^18.3.1",
-    "react-bootstrap-icons": "^1.10.3",
-    "react-dom": "^18.2.0",
-    "react-icons": "^5.5.0",
-    "react-router-dom": "^6.17.0",
-    "react-scripts": "^5.0.1",
-    "web-vitals": "^2.1.4"
-  },
+  "version": "1.7.0",
+  "description": "<div align=\"center\">",
+  "main": "index.js",
   "scripts": {
-    "start": "npm run build && node backend/index.js",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "postinstall": "npm install --legacy-peer-deps && npm run build",
-    "both": "concurrently \"npm run start\" \"nodemon backend/index.js\""
+    "frontend": "npm start --prefix frontend",
+    "backend": "npm run dev --prefix backend",
+    "both": "concurrently \"npm run frontend\" \"npm run backend\""
   },
-  "eslintConfig": {
-    "extends": [
-      "react-app",
-      "react-app/jest"
-    ]
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.2.0"
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+  "engines": {
+    "node": ">=18.0.0"
   }
 }

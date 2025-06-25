@@ -1,0 +1,36 @@
+{
+  "name": "cloud-deck",
+  "version": "1.7.0",
+  "private": true,
+  "dependencies": {
+    "axios": "^1.8.4",
+    "icons": "^1.0.0",
+    "lucide": "^0.485.0",
+    "lucide-react": "^0.485.0",
+    "react": "^18.3.1",
+    "react-bootstrap-icons": "^1.10.3",
+    "react-dom": "^18.2.0",
+    "react-icons": "^5.5.0",
+    "react-router-dom": "^6.17.0",
+    "react-scripts": "^5.0.1",
+    "web-vitals": "^2.1.4"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

@@ -1,10 +1,12 @@
 {
   "name": "cloud-deck-backend",
-  "version": "1.0.0",
+  "version": "1.7.0",
   "description": "\"Cloud-Deck - Your Data-Storage Deck on the cloud\",",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "postinstall": "npm install --prefix ../frontend && npm run build --prefix ../frontend"
   },
   "author": "",
   "license": "ISC",
@@ -20,5 +22,8 @@
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
