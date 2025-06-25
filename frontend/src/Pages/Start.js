@@ -48,44 +48,49 @@ const Start = () => {
   // Fetch documents on mount
   useEffect(() => {
     const fetchDocuments = async () => {
+      if (!isAuthenticated) return;
+
       try {
         const response = await api.get(`${API_URL}/filter`);
-        const documentsData = response.data || []; // Ensure it's always an array
+        const documentsData = Array.isArray(response.data) ? response.data : []; // Ensure it's always an array
         setDocuments(documentsData);
 
         // Extract unique folders and tags - safely handle arrays
         const uniqueFolders = [
-          ...new Set(documentsData.map((doc) => doc.folder)),
+          ...new Set(documentsData.map((doc) => doc.folder || 'Default')),
         ].map((name, index) => ({ id: String(index + 1), name, count: 0 }));
         setFolders(uniqueFolders);
 
         const uniqueTags = [
-          ...new Set(documentsData.flatMap((doc) => doc.tags || [])), // Handle missing tags
+          ...new Set(documentsData.flatMap((doc) => Array.isArray(doc.tags) ? doc.tags : [])), // Handle missing tags
         ];
         setAvailableTags(uniqueTags);
       } catch (error) {
         console.error('Error fetching documents:', error);
         setDocuments([]); // Ensure documents is always an array
+        setFolders([]);
+        setAvailableTags([]);
         showNotification('error', 'Failed to fetch documents');
       }
     };
-    if (isAuthenticated) {
-      fetchDocuments();
-    }
+
+    fetchDocuments();
   }, [isAuthenticated, API_URL]);
 
   // Filter and sort documents
   useEffect(() => {
     const fetchFilteredDocuments = async () => {
+      if (!isAuthenticated) return;
+
       try {
         const params = new URLSearchParams({
-          search: searchTerm,
-          folder: activeFolder,
-          tags: selectedTags.join(','),
-          sortBy,
+          search: searchTerm || '',
+          folder: activeFolder || 'All Files',
+          tags: Array.isArray(selectedTags) ? selectedTags.join(',') : '',
+          sortBy: sortBy || 'dateDesc',
         });
         const response = await api.get(`${API_URL}/filter?${params}`);
-        const documentsData = response.data || []; // Ensure it's always an array
+        const documentsData = Array.isArray(response.data) ? response.data : []; // Ensure it's always an array
         setDocuments(documentsData);
       } catch (error) {
         console.error('Error fetching filtered documents:', error);
@@ -93,39 +98,48 @@ const Start = () => {
         showNotification('error', 'Failed to fetch documents');
       }
     };
-    if (isAuthenticated) {
-      fetchFilteredDocuments();
-    }
+
+    fetchFilteredDocuments();
   }, [searchTerm, activeFolder, selectedTags, sortBy, isAuthenticated, API_URL]);
 
   // Filter documents (client-side for UI responsiveness)
-  const filteredDocuments = (documents || []).filter((doc) => {
-    const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredDocuments = Array.isArray(documents) ? documents.filter((doc) => {
+    const matchesSearch = doc.name && doc.name.toLowerCase().includes((searchTerm || '').toLowerCase());
     const matchesFolder = activeFolder === 'All Files' || doc.folder === activeFolder;
-    const matchesTags =
-      selectedTags.length === 0 || selectedTags.every((tag) => doc.tags.includes(tag));
+    const matchesTags = !Array.isArray(selectedTags) || selectedTags.length === 0 ||
+      selectedTags.every((tag) => Array.isArray(doc.tags) && doc.tags.includes(tag));
     return matchesSearch && matchesFolder && matchesTags;
-  });
+  }) : [];
 
   // Sort documents (client-side fallback)
-  const sortedDocuments = [...(filteredDocuments || [])].sort((a, b) => {
+  const sortedDocuments = Array.isArray(filteredDocuments) ? [...filteredDocuments].sort((a, b) => {
     switch (sortBy) {
       case 'nameAsc':
-        return a.name.localeCompare(b.name);
+        return (a.name || '').localeCompare(b.name || '');
       case 'nameDesc':
-        return b.name.localeCompare(a.name);
+        return (b.name || '').localeCompare(a.name || '');
       case 'dateAsc':
-        return new Date(a.lastModified).getTime() - new Date(b.lastModified).getTime();
+        return new Date(a.lastModified || 0).getTime() - new Date(b.lastModified || 0).getTime();
       case 'dateDesc':
-        return new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime();
+        return new Date(b.lastModified || 0).getTime() - new Date(a.lastModified || 0).getTime();
       case 'sizeAsc':
-        return parseFloat(a.size) - parseFloat(b.size);
+        return parseFloat(a.size || 0) - parseFloat(b.size || 0);
       case 'sizeDesc':
-        return parseFloat(b.size) - parseFloat(a.size);
+        return parseFloat(b.size || 0) - parseFloat(a.size || 0);
       default:
         return 0;
     }
-  });
+  }) : [];
+
+  if (!isAuthenticated) {
+    return (
+      <div className="dashboard-container">
+        <div className="loading-state">
+          <p>Please log in to access your documents.</p>
+        </div>
+      </div>
+    );
+  }
 
   // Handle file upload
   const handleFileUpload = async (e) => {
