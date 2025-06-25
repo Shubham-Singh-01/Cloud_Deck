@@ -1,6 +1,54 @@
 import React, { useEffect, useState } from "react";
-// import { Link } from "react-router-dom";
+import { CloudOff, Info } from 'lucide-react';
 import "../Styles/Home.css";
+
+const AWSStatusIndicator = ({ isOnline = false }) => {
+  const [showTooltip, setShowTooltip] = useState(false);
+
+  return (
+    <div className="aws-status-container">
+      <div 
+        className={`aws-status-indicator ${isOnline ? 'aws-online' : 'aws-offline'}`}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+        onClick={() => setShowTooltip(!showTooltip)}
+      >
+        <div className={`aws-status-icon ${isOnline ? 'aws-icon-online' : 'aws-icon-offline'}`}>
+          <CloudOff className="aws-icon" />
+        </div>
+
+        <div className="aws-status-text">
+          <span className="aws-status-title">AWS Services</span>
+          <span className={`aws-status-state ${isOnline ? 'text-emerald-300' : 'text-blue-300'}`}>
+            {isOnline ? 'Online' : 'Offline'}
+          </span>
+        </div>
+
+        <div className="aws-info-icon">
+          <Info className="aws-info-symbol" />
+        </div>
+
+        {isOnline && (
+          <div className="aws-pulse-container">
+            <div className="aws-pulse-ping"></div>
+            <div className="aws-pulse-dot"></div>
+          </div>
+        )}
+      </div>
+
+      {showTooltip && (
+        <div className="aws-tooltip-container">
+          <div className="aws-tooltip-content">
+            <div className="aws-tooltip-text">
+              💰 AWS services cost a dime, that's why they being turned off :)
+            </div>
+            <div className="aws-tooltip-arrow"></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const Home = () => {
   const [loaded, setLoaded] = useState(false);
@@ -11,9 +59,7 @@ const Home = () => {
 
   return (
     <div className="page-container">
-      {/* Hero Section */}
       <div className="hero-container">
-        {/* Moved particle container outside of logo area */}
         <div className="particle-container">
           {[...Array(20)].map((_, index) => (
             <div
@@ -108,7 +154,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* New Middle Section */}
       <div className="company-section">
         <div className="section-header">
           <h2>
@@ -172,7 +217,6 @@ const Home = () => {
         <div className="partners-section">
           <h3>Trusted By Industry Leaders</h3>
           <div className="partner-logos">
-            {/* Placeholder for partner logos */}
             {[...Array(6)].map((_, index) => (
               <div key={index} className="partner-logo"></div>
             ))}
@@ -180,7 +224,6 @@ const Home = () => {
         </div>
       </div>
 
-      {/* New Footer Section */}
       <footer className="footer">
         <div className="footer-content">
           <div className="footer-brand">
@@ -245,7 +288,7 @@ const Home = () => {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4 Assyriav-7a6 6 0 0 1 6-6z"></path>
                   <rect x="2" y="9" width="4" height="12"></rect>
                   <circle cx="4" cy="4" r="2"></circle>
                 </svg>
@@ -329,7 +372,7 @@ const Home = () => {
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; 2025 Cloud Deck, Inc. All rights reserved.</p>
+          <p>© 2025 Cloud Deck, Inc. All rights reserved.</p>
           <div className="legal-links">
             <a href="/privacypolicy">Privacy Policy</a>
             <a href="/termsofservice">Terms of Service</a>
@@ -337,6 +380,8 @@ const Home = () => {
           </div>
         </div>
       </footer>
+
+      <AWSStatusIndicator isOnline={false} />
     </div>
   );
 };
