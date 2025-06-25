@@ -50,17 +50,22 @@ const Start = () => {
     const fetchDocuments = async () => {
       try {
         const response = await api.get(`${API_URL}/filter`);
-        setDocuments(response.data);
-        // Extract unique folders and tags
+        const documentsData = response.data || []; // Ensure it's always an array
+        setDocuments(documentsData);
+
+        // Extract unique folders and tags - safely handle arrays
         const uniqueFolders = [
-          ...new Set(response.data.map((doc) => doc.folder)),
+          ...new Set(documentsData.map((doc) => doc.folder)),
         ].map((name, index) => ({ id: String(index + 1), name, count: 0 }));
         setFolders(uniqueFolders);
+
         const uniqueTags = [
-          ...new Set(response.data.flatMap((doc) => doc.tags)),
+          ...new Set(documentsData.flatMap((doc) => doc.tags || [])), // Handle missing tags
         ];
         setAvailableTags(uniqueTags);
       } catch (error) {
+        console.error('Error fetching documents:', error);
+        setDocuments([]); // Ensure documents is always an array
         showNotification('error', 'Failed to fetch documents');
       }
     };
@@ -80,8 +85,11 @@ const Start = () => {
           sortBy,
         });
         const response = await api.get(`${API_URL}/filter?${params}`);
-        setDocuments(response.data);
+        const documentsData = response.data || []; // Ensure it's always an array
+        setDocuments(documentsData);
       } catch (error) {
+        console.error('Error fetching filtered documents:', error);
+        setDocuments([]); // Ensure documents is always an array
         showNotification('error', 'Failed to fetch documents');
       }
     };
@@ -91,7 +99,7 @@ const Start = () => {
   }, [searchTerm, activeFolder, selectedTags, sortBy, isAuthenticated, API_URL]);
 
   // Filter documents (client-side for UI responsiveness)
-  const filteredDocuments = documents.filter((doc) => {
+  const filteredDocuments = (documents || []).filter((doc) => {
     const matchesSearch = doc.name.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesFolder = activeFolder === 'All Files' || doc.folder === activeFolder;
     const matchesTags =
@@ -100,7 +108,7 @@ const Start = () => {
   });
 
   // Sort documents (client-side fallback)
-  const sortedDocuments = [...filteredDocuments].sort((a, b) => {
+  const sortedDocuments = [...(filteredDocuments || [])].sort((a, b) => {
     switch (sortBy) {
       case 'nameAsc':
         return a.name.localeCompare(b.name);
@@ -144,9 +152,12 @@ const Start = () => {
           },
         });
 
-        setDocuments([...response.data.documents, ...documents]);
+        const newDocuments = response.data.documents || [];
+        const currentDocuments = documents || [];
+        setDocuments([...newDocuments, ...currentDocuments]);
+
         setActivities([
-          ...response.data.documents.map((doc) => ({
+          ...newDocuments.map((doc) => ({
             id: String(activities.length + 1),
             action: 'uploaded',
             document: doc.name,
@@ -157,18 +168,21 @@ const Start = () => {
         ]);
         showNotification('success', 'Files uploaded successfully');
 
+
         // Update folders
+        const allDocuments = [...currentDocuments, ...newDocuments];
         const uniqueFolders = [
-          ...new Set([...documents, ...response.data.documents].map((doc) => doc.folder)),
+          ...new Set(allDocuments.map((doc) => doc.folder)),
         ].map((name, index) => ({ id: String(index + 1), name, count: 0 }));
         setFolders(uniqueFolders);
 
         // Update tags
         const uniqueTags = [
-          ...new Set([...documents, ...response.data.documents].flatMap((doc) => doc.tags)),
+          ...new Set(allDocuments.flatMap((doc) => doc.tags || [])),
         ];
         setAvailableTags(uniqueTags);
       } catch (error) {
+        console.error('Upload error:', error);
         showNotification('error', 'Failed to upload files');
       } finally {
         setUploading(false);
