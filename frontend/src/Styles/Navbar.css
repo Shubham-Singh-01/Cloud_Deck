@@ -184,9 +184,14 @@
   z-index: 1001;
 }
 
-.user-menu:hover .dropdown-menu {
+/* .user-menu:hover .dropdown-menu {
+  display: block;
+} */
+
+.dropdown-menu.show {
   display: block;
 }
+
 
 .dropdown-menu a {
   display: block;

@@ -5,6 +5,7 @@ import AuthContext from "../Context/Auth/AuthContext";
 
 const Navbar = () => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const { isAuthenticated, user, logout } = useContext(AuthContext);
 
   const toggleNavbar = () => {
@@ -37,6 +38,7 @@ const Navbar = () => {
             <h3 className="logo-text">Cloud Deck</h3>
           </div>
         </Link>
+
         <button
           className={`cloud-navbar-toggler ${isExpanded ? "expanded" : ""}`}
           type="button"
@@ -54,58 +56,48 @@ const Navbar = () => {
         >
           <ul className="cloud-navbar-nav">
             <li className="nav-item">
-              <Link className="nav-link" to="/">
-                Home
-              </Link>
+              <Link className="nav-link" to="/">Home</Link>
             </li>
             {isAuthenticated && (
               <li className="nav-item">
-                <Link className="nav-link" to="/start">
-                  Start
-                </Link>
+                <Link className="nav-link" to="/start">Start</Link>
               </li>
             )}
             <li className="nav-item">
-              <Link className="nav-link" to="/pricing">
-                Pricing
-              </Link>
+              <Link className="nav-link" to="/pricing">Pricing</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/features">
-                Features
-              </Link>
+              <Link className="nav-link" to="/features">Features</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/about">
-                About
-              </Link>
+              <Link className="nav-link" to="/about">About</Link>
             </li>
             <li className="nav-item">
-              <Link className="nav-link" to="/contact">
-                Contact
-              </Link>
+              <Link className="nav-link" to="/contact">Contact</Link>
             </li>
           </ul>
 
           <div className="cloud-navbar-actions">
             {!isAuthenticated ? (
               <>
-                <Link className="btn btn-login" to="/login">
-                  Log In
-                </Link>
-                <Link className="btn btn-signup" to="/signup">
-                  Sign Up
-                </Link>
+                <Link className="btn btn-login" to="/login">Log In</Link>
+                <Link className="btn btn-signup" to="/signup">Sign Up</Link>
               </>
             ) : (
               <div className="user-menu">
-                <div className="user-profile">
+                <div
+                  className="user-profile"
+                  onClick={() => setShowDropdown(prev => !prev)}
+                  onBlur={() => setShowDropdown(false)}
+                  tabIndex={0}
+                >
                   <span className="user-name">{user?.name}</span>
                   <div className="user-avatar">
                     {user?.name ? user.name.charAt(0).toUpperCase() : "U"}
                   </div>
                 </div>
-                <div className="dropdown-menu">
+
+                <div className={`dropdown-menu ${showDropdown ? "show" : ""}`}>
                   <Link to="/dashboard">Dashboard</Link>
                   <Link to="/profile">Profile</Link>
                   <Link to="/settings">Settings</Link>

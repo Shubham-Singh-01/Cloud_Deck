@@ -40,7 +40,7 @@ const AWSStatusIndicator = ({ isOnline = false }) => {
         <div className="aws-tooltip-container">
           <div className="aws-tooltip-content">
             <div className="aws-tooltip-text">
-              💰 AWS services cost a dime, that's why they being turned off :)
+              Even the cloud needs a coffee break. ☕☁️😄
             </div>
             <div className="aws-tooltip-arrow"></div>
           </div>

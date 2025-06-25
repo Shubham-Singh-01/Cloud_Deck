@@ -11,7 +11,7 @@
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 
 ![Project Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
-![Version](https://img.shields.io/badge/Version-1.6.0-blue?style=for-the-badge)
+![Version](https://img.shields.io/badge/Version-1.8.0-blue?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 </div>
@@ -33,11 +33,15 @@
 <p align="center">
   <a href="https://vercel.com" target="_blank">
     <img src="https://img.shields.io/badge/Hosted%20on-Vercel-000?logo=vercel&logoColor=white" alt="Vercel Badge">
-  </a>
+  </a><br/>
+  <sub>Vercel hosts the frontend only</sub>
 </p>
 
 <p align="center">
-  👉 <strong>Live Site:</strong> <a href="https://cloud-deck.vercel.app/">cloud-deck.vercel.app</a>
+  <a href="https://cloud-deck-4mrz.onrender.com/" target="_blank">
+    <img src="https://img.shields.io/badge/Full%20App%20on-Render-0033AD?logo=render&logoColor=white" alt="Render Badge">
+  </a><br/>
+  <sub>Render hosts the full application (may sleep)</sub>
 </p>
 
 <p align="center">
@@ -46,6 +50,7 @@
 
 
 ---
+<br/>
 
 ## ✨ Key Features
 
