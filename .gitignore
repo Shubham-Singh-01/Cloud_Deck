@@ -13,7 +13,9 @@ node_modules
 
 # misc
 .DS_Store
+# Ignore environment files
 .env
+**/.env
 .env.local
 .env.development.local
 .env.test.local
