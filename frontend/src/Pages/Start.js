@@ -39,7 +39,7 @@ const Start = () => {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState([]);
   const [showMoreMenu, setShowMoreMenu] = useState(null);
-  const [isMobile, setIsMobile] = useState(false); // New state for mobile detection
+  const [isMobile, setIsMobile] = useState(false);
 
   const fileInputRef = useRef(null);
   const uploadDropzoneRef = useRef(null);
@@ -53,10 +53,9 @@ const Start = () => {
       setIsMobile(mobileMediaQuery.matches);
     };
 
-    checkMobile(); // Initial check
-    window.addEventListener('resize', checkMobile); // Update on resize
-
-    return () => window.removeEventListener('resize', checkMobile); // Cleanup
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
   // Fetch documents on mount
@@ -66,6 +65,7 @@ const Start = () => {
 
       try {
         const response = await api.get(`${API_URL}/filter`);
+        console.log('Fetch documents response:', response.data); // Debug
         const documentsData = Array.isArray(response.data) ? response.data : [];
         setDocuments(documentsData);
 
@@ -79,11 +79,11 @@ const Start = () => {
         ];
         setAvailableTags(uniqueTags);
       } catch (error) {
-        console.error('Error fetching documents:', error);
+        console.error('Error fetching documents:', error.response?.data || error.message);
         setDocuments([]);
         setFolders([]);
         setAvailableTags([]);
-        showNotification('error', 'Failed to fetch documents');
+        showNotification('error', error.response?.data?.error || 'Failed to fetch documents');
       }
     };
 
@@ -103,12 +103,13 @@ const Start = () => {
           sortBy: sortBy || 'dateDesc',
         });
         const response = await api.get(`${API_URL}/filter?${params}`);
+        console.log('Fetch filtered documents response:', response.data); // Debug
         const documentsData = Array.isArray(response.data) ? response.data : [];
         setDocuments(documentsData);
       } catch (error) {
-        console.error('Error fetching filtered documents:', error);
+        console.error('Error fetching filtered documents:', error.response?.data || error.message);
         setDocuments([]);
-        showNotification('error', 'Failed to fetch documents');
+        showNotification('error', error.response?.data?.error || 'Failed to fetch documents');
       }
     };
 
@@ -179,6 +180,7 @@ const Start = () => {
           },
         });
 
+        console.log('Upload response:', response.data); // Debug
         const newDocuments = response.data.documents || [];
         const currentDocuments = documents || [];
         setDocuments([...newDocuments, ...currentDocuments]);
@@ -206,8 +208,8 @@ const Start = () => {
         ];
         setAvailableTags(uniqueTags);
       } catch (error) {
-        console.error('Upload error:', error);
-        showNotification('error', 'Failed to upload files');
+        console.error('Upload error:', error.response?.data || error.message);
+        showNotification('error', error.response?.data?.error || 'Failed to upload files');
       } finally {
         setUploading(false);
         setUploadProgress(0);
@@ -243,7 +245,8 @@ const Start = () => {
   // Delete document
   const deleteDocument = async (id) => {
     try {
-      const response = await api.delete(`${API_URL}/${id}`);
+      const response = await api.delete(`${API_URL}/documents/${id}`);
+      console.log('Delete response:', response.data); // Debug
       setDocuments(documents.filter((doc) => doc._id !== id));
       setActivities([
         {
@@ -255,36 +258,43 @@ const Start = () => {
         },
         ...activities,
       ]);
-      showNotification('info', response.data.message);
+      showNotification('info', response.data.message || 'Document deleted');
     } catch (error) {
-      showNotification('error', 'Failed to delete document');
+      console.error('Delete error:', error.response?.data || error.message);
+      showNotification('error', error.response?.data?.error || 'Failed to delete document');
     }
   };
 
   // Download document
-  const downloadDocument = async (id, name) => {
-    try {
-      const response = await api.get(`${API_URL}/download/${id}`, {
-        responseType: 'blob',
-      });
-      const url = window.URL.createObjectURL(new Blob([response.data]));
+const downloadDocument = async (id, name) => {
+  try {
+    const response = await api.get(`/uploads/download/${id}`);
+
+    if (response.data.success && response.data.url) {
       const link = document.createElement('a');
-      link.href = url;
-      link.download = name;
+      link.href = response.data.url;
+      link.download = name || 'downloaded-file';
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      showNotification('success', 'File downloaded');
-    } catch (error) {
-      showNotification('error', 'Failed to download file');
+
+      setTimeout(() => {
+        document.body.removeChild(link);
+        showNotification('success', 'Download started.');
+      }, 100);
+    } else {
+      throw new Error('No download URL returned');
     }
-  };
+  } catch (error) {
+    console.error('Download failed:', error);
+    showNotification('error', error.message || 'Failed to download file');
+  }
+};
 
   // Update document
   const updateDocument = async (id, updates) => {
     try {
-      const response = await api.put(`${API_URL}/${id}`, updates);
+      const response = await api.put(`${API_URL}/documents/${id}`, updates);
+      console.log('Update response:', response.data); // Debug
       setDocuments(
         documents.map((doc) =>
           doc._id === id ? response.data.document : doc
@@ -292,7 +302,8 @@ const Start = () => {
       );
       showNotification('success', 'Document updated');
     } catch (error) {
-      showNotification('error', 'Failed to update document');
+      console.error('Update error:', error.response?.data || error.message);
+      showNotification('error', error.response?.data?.error || 'Failed to update document');
     }
   };
 
@@ -307,7 +318,7 @@ const Start = () => {
         );
         try {
           await Promise.all(
-            selectedDocuments.map((id) => api.delete(`${API_URL}/${id}`))
+            selectedDocuments.map((id) => api.delete(`${API_URL}/documents/${id}`))
           );
           setDocuments(documents.filter((doc) => !selectedDocuments.includes(doc._id)));
           showNotification('info', `${selectedDocuments.length} documents deleted`);
@@ -322,7 +333,8 @@ const Start = () => {
             ...activities,
           ]);
         } catch (error) {
-          showNotification('error', 'Failed to delete documents');
+          console.error('Bulk delete error:', error.response?.data || error.message);
+          showNotification('error', error.response?.data?.error || 'Failed to delete documents');
         }
         break;
       case 'favorite':
@@ -332,7 +344,8 @@ const Start = () => {
           );
           showNotification('success', `${selectedDocuments.length} documents marked as favorite`);
         } catch (error) {
-          showNotification('error', 'Failed to update documents');
+          console.error('Bulk favorite error:', error.response?.data || error.message);
+          showNotification('error', error.response?.data?.error || 'Failed to update documents');
         }
         break;
       case 'unfavorite':
@@ -342,7 +355,8 @@ const Start = () => {
           );
           showNotification('info', `${selectedDocuments.length} documents removed from favorites`);
         } catch (error) {
-          showNotification('error', 'Failed to update documents');
+          console.error('Bulk unfavorite error:', error.response?.data || error.message);
+          showNotification('error', error.response?.data?.error || 'Failed to update documents');
         }
         break;
       default:
@@ -456,7 +470,7 @@ const Start = () => {
     setNotification({ type, message });
     setTimeout(() => {
       setNotification(null);
-    }, 3000);
+    }, 5000);
   };
 
   // Open file preview
@@ -579,12 +593,6 @@ const Start = () => {
             <p className="mobile-popup-text">
               Please use a laptop or desktop to view this page for the best experience.
             </p>
-            {/* <button
-              className="mobile-popup-button"
-              onClick={() => setIsMobile(false)}
-            >
-              Close
-            </button> */}
           </div>
         </div>
       )}

@@ -55,6 +55,10 @@ const DocumentSchema = new Schema({
     type: String,
     required: false,
   },
+  s3Key: {
+    type: String,
+    required: true, // This will be used to delete the file from S3
+  },
 });
 
 module.exports = mongoose.model('document', DocumentSchema);
