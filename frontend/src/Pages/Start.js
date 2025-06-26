@@ -6,7 +6,7 @@ import {
   FileSymlink, MoreHorizontal, AlertTriangle, FolderOpen, MessageCircle,
 } from 'lucide-react';
 import '../Styles/Start.css';
-import api from '../utils/api' // Import centralized API instance
+import api from '../utils/api';
 import AuthContext from '../Context/Auth/AuthContext';
 
 const Start = () => {
@@ -39,11 +39,25 @@ const Start = () => {
   const [showBulkActions, setShowBulkActions] = useState(false);
   const [selectedDocuments, setSelectedDocuments] = useState([]);
   const [showMoreMenu, setShowMoreMenu] = useState(null);
+  const [isMobile, setIsMobile] = useState(false); // New state for mobile detection
 
   const fileInputRef = useRef(null);
   const uploadDropzoneRef = useRef(null);
 
   const API_URL = process.env.REACT_APP_API_URL + '/api/uploads';
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobileMediaQuery = window.matchMedia('(max-width: 768px)');
+      setIsMobile(mobileMediaQuery.matches);
+    };
+
+    checkMobile(); // Initial check
+    window.addEventListener('resize', checkMobile); // Update on resize
+
+    return () => window.removeEventListener('resize', checkMobile); // Cleanup
+  }, []);
 
   // Fetch documents on mount
   useEffect(() => {
@@ -52,22 +66,21 @@ const Start = () => {
 
       try {
         const response = await api.get(`${API_URL}/filter`);
-        const documentsData = Array.isArray(response.data) ? response.data : []; // Ensure it's always an array
+        const documentsData = Array.isArray(response.data) ? response.data : [];
         setDocuments(documentsData);
 
-        // Extract unique folders and tags - safely handle arrays
         const uniqueFolders = [
           ...new Set(documentsData.map((doc) => doc.folder || 'Default')),
         ].map((name, index) => ({ id: String(index + 1), name, count: 0 }));
         setFolders(uniqueFolders);
 
         const uniqueTags = [
-          ...new Set(documentsData.flatMap((doc) => Array.isArray(doc.tags) ? doc.tags : [])), // Handle missing tags
+          ...new Set(documentsData.flatMap((doc) => Array.isArray(doc.tags) ? doc.tags : [])),
         ];
         setAvailableTags(uniqueTags);
       } catch (error) {
         console.error('Error fetching documents:', error);
-        setDocuments([]); // Ensure documents is always an array
+        setDocuments([]);
         setFolders([]);
         setAvailableTags([]);
         showNotification('error', 'Failed to fetch documents');
@@ -90,11 +103,11 @@ const Start = () => {
           sortBy: sortBy || 'dateDesc',
         });
         const response = await api.get(`${API_URL}/filter?${params}`);
-        const documentsData = Array.isArray(response.data) ? response.data : []; // Ensure it's always an array
+        const documentsData = Array.isArray(response.data) ? response.data : [];
         setDocuments(documentsData);
       } catch (error) {
         console.error('Error fetching filtered documents:', error);
-        setDocuments([]); // Ensure documents is always an array
+        setDocuments([]);
         showNotification('error', 'Failed to fetch documents');
       }
     };
@@ -182,15 +195,12 @@ const Start = () => {
         ]);
         showNotification('success', 'Files uploaded successfully');
 
-
-        // Update folders
         const allDocuments = [...currentDocuments, ...newDocuments];
         const uniqueFolders = [
           ...new Set(allDocuments.map((doc) => doc.folder)),
         ].map((name, index) => ({ id: String(index + 1), name, count: 0 }));
         setFolders(uniqueFolders);
 
-        // Update tags
         const uniqueTags = [
           ...new Set(allDocuments.flatMap((doc) => doc.tags || [])),
         ];
@@ -271,7 +281,7 @@ const Start = () => {
     }
   };
 
-  // Update document (e.g., favorite, tags)
+  // Update document
   const updateDocument = async (id, updates) => {
     try {
       const response = await api.put(`${API_URL}/${id}`, updates);
@@ -561,6 +571,24 @@ const Start = () => {
       onDrop={handleDrop}
       onDragLeave={handleDragLeave}
     >
+      {/* Mobile Popup */}
+      {isMobile && (
+        <div className="mobile-popup-overlay">
+          <div className="mobile-popup-content">
+            <h3 className="mobile-popup-title">Desktop Only</h3>
+            <p className="mobile-popup-text">
+              Please use a laptop or desktop to view this page for the best experience.
+            </p>
+            {/* <button
+              className="mobile-popup-button"
+              onClick={() => setIsMobile(false)}
+            >
+              Close
+            </button> */}
+          </div>
+        </div>
+      )}
+
       {/* Upload Dropzone Overlay */}
       {isUploadDropzoneActive && (
         <div ref={uploadDropzoneRef} className="upload-dropzone" tabIndex={-1}>
@@ -734,7 +762,6 @@ const Start = () => {
 
         {/* Main Content Area */}
         <main className="main">
-          {/* Page heading and actions */}
           <div className="page-header">
             <div>
               <h2 className="page-title">
@@ -747,7 +774,6 @@ const Start = () => {
             </div>
 
             <div className="page-actions">
-              {/* Bulk actions */}
               {showBulkActions && (
                 <div className="bulk-actions">
                   <span className="bulk-selection">
@@ -787,7 +813,6 @@ const Start = () => {
                 </div>
               )}
 
-              {/* Sort options */}
               <div className="sort-container">
                 <button
                   className="sort-button"
@@ -857,7 +882,6 @@ const Start = () => {
                   </button>
                 </div>
               </div>
-              {/* View Mode Toggle */}
               <div className="view-toggle">
                 <button
                   className={`view-button ${viewMode === 'grid' ? 'active' : ''}`}
@@ -875,7 +899,6 @@ const Start = () => {
             </div>
           </div>
 
-          {/* Tag Filters */}
           {selectedTags.length > 0 && (
             <div className="tag-filters">
               <span className="tag-filter-label">Filtered by tags:</span>
@@ -899,7 +922,6 @@ const Start = () => {
             </div>
           )}
 
-          {/* File List */}
           {uploading && (
             <div className="upload-progress">
               <div className="upload-progress-content">
@@ -1081,7 +1103,6 @@ const Start = () => {
                 </tbody>
               </table>
 
-              {/* Empty State */}
               {filteredDocuments.length === 0 && (
                 <div className="empty-state">
                   <FileText size={64} className="empty-icon" />
@@ -1255,7 +1276,6 @@ const Start = () => {
           )}
         </main>
 
-        {/* Activity Feed Sidebar */}
         {showActivityFeed && (
           <aside className="activity-sidebar">
             <div className="activity-content">
@@ -1295,7 +1315,6 @@ const Start = () => {
         )}
       </div>
 
-      {/* File Details Sidebar */}
       {showFileDetails && selectedFile && (
         <div className="file-details-overlay" style={{ paddingTop: '80px' }}>
           <div className="file-details-sidebar">
@@ -1465,7 +1484,6 @@ const Start = () => {
         </div>
       )}
 
-      {/* New Folder Modal */}
       {showNewFolderModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -1494,7 +1512,6 @@ const Start = () => {
         </div>
       )}
 
-      {/* New Tag Modal */}
       {showNewTagModal && (
         <div className="modal-overlay">
           <div className="modal-content">
@@ -1523,7 +1540,6 @@ const Start = () => {
         </div>
       )}
 
-      {/* File Preview Modal */}
       {showPreviewModal && previewFile && (
         <div
           className="modal-overlay preview"
@@ -1536,7 +1552,7 @@ const Start = () => {
             }
           }}
           tabIndex={-1}
-          style={{ paddingTop: '180px' }} // Offset to appear below navbar
+          style={{ paddingTop: '180px' }}
         >
           <div className="preview-modal">
             <div className="preview-header">
@@ -1602,7 +1618,6 @@ const Start = () => {
         </div>
       )}
 
-      {/* Notification */}
       {notification && (
         <div className="notification-container">
           <div className={`notification ${notification.type}`}>
@@ -1615,7 +1630,6 @@ const Start = () => {
         </div>
       )}
 
-      {/* Activity Toggle Button */}
       <button
         className={`activity-toggle ${showActivityFeed ? 'active' : ''}`}
         onClick={() => setShowActivityFeed(!showActivityFeed)}

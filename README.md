@@ -9,6 +9,7 @@
 [![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=json-web-tokens&logoColor=white)](https://jwt.io/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+[![AWS S3](https://img.shields.io/badge/AWS%20S3-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)](https://aws.amazon.com/s3/)
 
 ![Project Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
 ![Version](https://img.shields.io/badge/Version-1.8.0-blue?style=for-the-badge)
@@ -41,7 +42,7 @@
   <a href="https://cloud-deck-4mrz.onrender.com/" target="_blank">
     <img src="https://img.shields.io/badge/Full%20App%20on-Render-0033AD?logo=render&logoColor=white" alt="Render Badge">
   </a><br/>
-  <sub>Render hosts the full application (may sleep)</sub>
+  <sub>Render hosts the Full application (May Sleep)</sub>
 </p>
 
 <p align="center">
@@ -86,6 +87,8 @@
 [![Mongoose](https://img.shields.io/badge/Mongoose-Latest-880000?style=flat-square&logo=mongoose&logoColor=white)](https://mongoosejs.com/)
 [![JWT](https://img.shields.io/badge/JWT-Latest-000000?style=flat-square&logo=json-web-tokens&logoColor=white)](https://jwt.io/)
 [![bcrypt](https://img.shields.io/badge/bcrypt.js-Latest-003B57?style=flat-square)](https://github.com/dcodeIO/bcrypt.js/)
+[![AWS S3](https://img.shields.io/badge/AWS%20S3-Storage-000000?style=flat-square&logo=amazonaws&logoColor=white)](https://aws.amazon.com/s3/)
+
 
 </div>
 
@@ -230,6 +233,6 @@ Your contributions can make Cloud Deck even better! Check our [issues page](http
 
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=for-the-badge&logo=linkedin)](https://linkedin.com/in/singh200410)
 [![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github)](https://github.com/Shubham-Singh-01)
-[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-00A98F?style=for-the-badge&logo=safari)](https://yourportfolio.com)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-00A98F?style=for-the-badge&logo=safari)](https://ss-folio.vercel.app)
 
 </div>
