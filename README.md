@@ -31,7 +31,7 @@
 ## 🌐 Live Demo
 
 <p align="center">
-  <a href="https://vercel.com" target="_blank">
+  <a href="https://cloud-deck.vercel.app/" target="_blank">
     <img src="https://img.shields.io/badge/Hosted%20on-Vercel-000?logo=vercel&logoColor=white" alt="Vercel Badge">
   </a><br/>
   <sub>Vercel hosts the frontend only</sub>
@@ -169,7 +169,7 @@ CLOUD DECK/
 │   │   └── 📄 User.js                 # User model with authentication methods
 │   ├── 📁 routes/
 │   │   ├── 📄 auth.js                 # Authentication endpoints (login, signup, etc.)
-│   │   └── 📄 uploads.js                # API endpoints for Documents CRUD operations
+│   │   └── 📄 uploads.js              # API endpoints for Documents CRUD operations
 │   ├── 📄 .env                        # Environment variables for backend configuration
 │   ├── 📄 db.js                       # Database connection and configuration
 │   └── 📄 index.js                    # Express server entry point

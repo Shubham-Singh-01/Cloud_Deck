@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import "../Styles/Navbar.css";
 import AuthContext from "../Context/Auth/AuthContext";
@@ -8,6 +8,8 @@ const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const { isAuthenticated, user, logout } = useContext(AuthContext);
 
+  const dropdownRef = useRef();
+
   const toggleNavbar = () => {
     setIsExpanded(!isExpanded);
   };
@@ -15,6 +17,20 @@ const Navbar = () => {
   const handleLogout = () => {
     logout();
   };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <nav className="cloud-navbar">
@@ -84,12 +100,10 @@ const Navbar = () => {
                 <Link className="btn btn-signup" to="/signup">Sign Up</Link>
               </>
             ) : (
-              <div className="user-menu">
+              <div className="user-menu" ref={dropdownRef}>
                 <div
                   className="user-profile"
-                  onClick={() => setShowDropdown(prev => !prev)}
-                  onBlur={() => setShowDropdown(false)}
-                  tabIndex={0}
+                  onClick={() => setShowDropdown((prev) => !prev)}
                 >
                   <span className="user-name">{user?.name}</span>
                   <div className="user-avatar">
