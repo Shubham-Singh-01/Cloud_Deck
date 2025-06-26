@@ -173,29 +173,31 @@ CLOUD DECK/
 │   ├── 📄 .env                        # Environment variables for backend configuration
 │   ├── 📄 db.js                       # Database connection and configuration
 │   └── 📄 index.js                    # Express server entry point
-├── 📁 src/
-│   ├── 📁 Context/
-│   │   └── 📁 Auth/
-│   │       └── 📄 AuthContext.js      # React context for authentication state management
-│   ├── 📁 Pages/
-│   │   ├── 📁 Routing/
-│   │   │   └── 📄 ProtectedRoute.js   # Component for securing routes requiring authentication
-│   │   ├── 📄 About.js                # About page component
-│   │   ├── 📄 Home.js                 # Home page component
-│   │   ├── 📄 Login.js                # Login page with authentication form
-│   │   ├── 📄 Navbar.js               # Navigation bar component
-│   │   ├── 📄 Signup.js               # User registration page
-│   │   └── 📄 Start.js                # Landing page component after Login
-│   ├── 📁 Styles/
-│   │   ├── 📄 About.css               # Styles for About page
-│   │   ├── 📄 Home.css                # Styles for Home page
-│   │   ├── 📄 LoginSignup.css         # Shared styles for login and signup forms
-│   │   ├── 📄 Navbar.css              # Styles for navigation component
-│   │   └── 📄 Start.css               # Styles for Start page
-│   └── 📁 utils/
-│       └── 📄 api.js                  # API utility functions for backend communication
-├── 📄 App.js                          # Main React application component
-└── 📄 index.js                        # React entry point
+├── 📁 frontend/
+│   ├── 📁 src/
+│   │   ├── 📁 Context/
+│   │   │   └── 📁 Auth/
+│   │   │       └── 📄 AuthContext.js  # React context for authentication state management
+│   │   ├── 📁 Pages/
+│   │   │   ├── 📁 Routing/
+│   │   │   │   └── 📄 ProtectedRoute.js # Component for securing routes requiring authentication
+│   │   │   ├── 📄 About.js            # About page component
+│   │   │   ├── 📄 Home.js             # Home page component
+│   │   │   ├── 📄 Login.js            # Login page with authentication form
+│   │   │   ├── 📄 Navbar.js           # Navigation bar component
+│   │   │   ├── 📄 Signup.js           # User registration page
+│   │   │   └── 📄 Start.js            # Landing page component after Login
+│   │   ├── 📁 Styles/
+│   │   │   ├── 📄 About.css           # Styles for About page
+│   │   │   ├── 📄 Home.css            # Styles for Home page
+│   │   │   ├── 📄 LoginSignup.css     # Shared styles for login and signup forms
+│   │   │   ├── 📄 Navbar.css          # Styles for navigation component
+│   │   │   └── 📄 Start.css           # Styles for Start page
+│   │   └── 📁 utils/
+│   │       └── 📄 api.js              # API utility functions for backend communication
+│   ├── 📄 App.js                      # Main React application component
+│   └── 📄 index.js                    # React entry point
+
 ```
 
 ---
