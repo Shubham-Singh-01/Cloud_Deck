@@ -201,7 +201,20 @@
     margin-right: 0.75rem;
 }
 
+.folder-item-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.folder-item-container:hover .folder-actions {
+    opacity: 1;
+    visibility: visible;
+}
+
 .sidebar-item.folder {
+    flex: 1;
     justify-content: space-between;
 }
 
@@ -213,6 +226,36 @@
 .folder-count {
     font-size: 0.75rem;
     color: #6b7280;
+}
+
+.folder-actions {
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s, visibility 0.2s;
+}
+
+.folder-action-btn {
+    padding: 0.25rem;
+    background: none;
+    border: none;
+    border-radius: 0.25rem;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.folder-action-btn:hover {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.folder-action-btn.delete:hover {
+    background: #fee2e2;
+    color: #dc2626;
 }
 
 .tags-header {
@@ -272,15 +315,21 @@
 }
 
 .storage-fill {
-    background: #2563eb;
-    width: 66.67%;
+    background: linear-gradient(90deg, #2563eb 0%, #3b82f6 100%);
     height: 100%;
     border-radius: 9999px;
+    transition: width 0.3s ease;
 }
 
 .storage-text {
     font-size: 0.75rem;
     color: #6b7280;
+    margin-bottom: 0.25rem;
+}
+
+.storage-text-small {
+    font-size: 0.7rem;
+    color: #9ca3af;
 }
 
 .main {
@@ -1233,20 +1282,44 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 50;
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .modal-content {
     background: #ffffff;
     padding: 1.5rem;
     border-radius: 0.5rem;
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
     max-width: 24rem;
     width: 100%;
+    animation: slideUp 0.3s ease;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
 }
 
 .modal-body {
@@ -1256,55 +1329,85 @@
 }
 
 .modal-title {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    color: #1f2937;
+    color: #111827;
+    margin-bottom: 0.5rem;
+}
+
+.modal-message {
+    font-size: 0.875rem;
+    color: #374151;
+    line-height: 1.6;
 }
 
 .modal-input {
-    padding: 0.5rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid #d1d5db;
     border-radius: 0.375rem;
     font-size: 0.875rem;
+    color: #111827;
+    background: #ffffff;
+    transition: all 0.2s ease;
+}
+
+.modal-input::placeholder {
+    color: #9ca3af;
 }
 
 .modal-input:focus {
     outline: none;
     border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .modal-actions {
     display: flex;
     justify-content: flex-end;
     gap: 0.5rem;
+    margin-top: 0.5rem;
 }
 
 .modal-button {
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1.25rem;
     border-radius: 0.375rem;
     font-size: 0.875rem;
+    font-weight: 500;
     cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
 }
 
 .modal-button.cancel {
     background: #f3f4f6;
     color: #374151;
-    border: none;
 }
 
 .modal-button.cancel:hover {
     background: #e5e7eb;
+    transform: translateY(-1px);
 }
 
 .modal-button.create {
     background: #2563eb;
     color: #ffffff;
-    border: none;
 }
 
 .modal-button.create:hover {
     background: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(37, 99, 235, 0.3);
+}
+
+.modal-button.delete {
+    background: #dc2626;
+    color: #ffffff;
+}
+
+.modal-button.delete:hover {
+    background: #b91c1c;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px rgba(220, 38, 38, 0.3);
 }
 
 .modal-overlay.preview {
@@ -1511,86 +1614,111 @@
 }
 
 
-/* Mobile Popup Styles */
+/* ========================================
+   DESKTOP-ONLY POPUP - MINIMAL GLASS DESIGN
+   Blocks mobile/tablet access with blur effect
+   ======================================== */
+
 .mobile-popup-overlay {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw; /* Full viewport width */
-    height: 100%; /* Extend to full document height */
-    min-height: 100vh; /* Minimum viewport height */
-    background: rgba(0, 0, 0, 0.6); /* Default darker semi-transparent background */
-    backdrop-filter: blur(12px); /* Default increased blur */
-    -webkit-backdrop-filter: blur(12px); /* For Safari support */
-    z-index: 60; /* Higher than other modals */
-    overflow: hidden; /* Prevent overflow */
-    padding: 0 1rem; /* Default padding */
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    padding: 2rem;
+    animation: fadeIn 0.3s ease;
 }
 
-/* Popup styles */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
 .mobile-popup-content {
-    background: rgba(255, 255, 255, 0.6); /* More transparent for enhanced glass effect */
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.3); /* Softer shadow for glassiness */
-    width: 300px; /* Fixed smaller width */
-    max-width: 90vw; /* Ensure it fits within viewport */
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    padding: 2rem 2.5rem;
+    border-radius: 16px;
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.3),
+        0 10px 20px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    max-width: 420px;
+    width: 100%;
     text-align: center;
-    box-sizing: border-box; /* Prevent padding from causing overflow */
-    position: fixed; /* Detach from overlay and fix to viewport */
-    left: 2.5rem; /* Fixed 2.5rem space from left edge */
-    transform: translateY(-50%); /* Center vertically relative to its height */
-    z-index: 61; /* Above the overlay */
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    position: relative;
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Default title, text, and button styles (unchanged) */
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
 .mobile-popup-title {
-    font-size: 1.25rem; /* Slightly smaller for compact look */
-    font-weight: 600;
+    font-size: 1.5rem;
+    font-weight: 700;
     color: #1f2937;
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
+    letter-spacing: -0.025em;
 }
 
 .mobile-popup-text {
-    font-size: 0.875rem; /* Smaller text for compact design */
+    font-size: 1rem;
     color: #6b7280;
-    margin-bottom: 1rem;
+    margin: 0;
+    line-height: 1.6;
+    font-weight: 400;
 }
 
-.mobile-popup-button {
-    padding: 0.5rem 1.25rem;
-    background: #2563eb;
-    color: #ffffff;
-    border: none;
-    border-radius: 0.375rem;
+.mobile-popup-hint {
     font-size: 0.875rem;
-    cursor: pointer;
+    color: #9ca3af;
+    margin: 1rem 0 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid #e5e7eb;
+    font-weight: 500;
+    letter-spacing: 0.025em;
 }
 
-.mobile-popup-button:hover {
-    background: #1d4ed8;
+/* Hide dashboard completely when mobile popup is active */
+.dashboard-hidden > *:not(.mobile-popup-overlay) {
+    display: none !important;
 }
 
-/* Media query for 480px screens (mobile) */
-@media (max-width: 480px) {
-    .mobile-popup-overlay {
-        background: rgba(0, 0, 0, 0.6); /* Lighter blur for smaller screens */
-        backdrop-filter: blur(8px); /* Reduced blur */
-        -webkit-backdrop-filter: blur(8px);
-    }
+.dashboard-hidden {
+    overflow: hidden;
+    height: 100vh;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
     .mobile-popup-content {
-        top: calc(6rem + 8rem); /* Adjusted to 9rem total (144px if root font-size is 16px) for better fit */
+        padding: 1.75rem 2rem;
+        max-width: 90vw;
     }
-}
-
-/* Media query for 720px screens (tablet) and up to 1020px */
-@media (min-width: 481px) and (max-width: 1020px) {
-    .mobile-popup-overlay {
-        background: rgba(0, 0, 0, 0.6); /* Darker blur for medium screens */
-        backdrop-filter: blur(10px); /* Moderate blur */
-        -webkit-backdrop-filter: blur(10px);
+    
+    .mobile-popup-title {
+        font-size: 1.375rem;
     }
-    .mobile-popup-content {
-        top: calc(4rem + 10rem); /* Adjusted to 11rem total (176px if root font-size is 16px) for balance */
+    
+    .mobile-popup-text {
+        font-size: 0.9375rem;
     }
 }

@@ -40,6 +40,10 @@ const Start = () => {
   const [selectedDocuments, setSelectedDocuments] = useState([]);
   const [showMoreMenu, setShowMoreMenu] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  const [storageInfo, setStorageInfo] = useState({ used: { formatted: '0 GB' }, quota: { formatted: '5 GB' }, percentageUsed: 0, fileCount: 0 });
+  const [showEditFolderModal, setShowEditFolderModal] = useState(false);
+  const [editingFolder, setEditingFolder] = useState(null);
+  const [folderToDelete, setFolderToDelete] = useState(null);
 
   const fileInputRef = useRef(null);
   const uploadDropzoneRef = useRef(null);
@@ -59,10 +63,10 @@ const Start = () => {
 
   const API_URL = getApiUrl();
 
-  // Detect mobile screen size
+  // Detect mobile/tablet screen size (below 1200px)
   useEffect(() => {
     const checkMobile = () => {
-      const mobileMediaQuery = window.matchMedia('(max-width: 768px)');
+      const mobileMediaQuery = window.matchMedia('(max-width: 1199px)');
       setIsMobile(mobileMediaQuery.matches);
     };
 
@@ -70,6 +74,44 @@ const Start = () => {
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Fetch folders on mount
+  useEffect(() => {
+    const fetchFolders = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const response = await api.get(`${API_URL}/folders`);
+        console.log('Fetch folders response:', response.data); // Debug
+        const foldersData = Array.isArray(response.data) ? response.data : [];
+        setFolders(foldersData.map(f => ({ ...f, id: f._id })));
+      } catch (error) {
+        console.error('Error fetching folders:', error.response?.data || error.message);
+        setFolders([]);
+      }
+    };
+
+    fetchFolders();
+  }, [isAuthenticated, API_URL]);
+
+  // Fetch storage info on mount
+  useEffect(() => {
+    const fetchStorageInfo = async () => {
+      if (!isAuthenticated) return;
+
+      try {
+        const response = await api.get(`${API_URL}/storage`);
+        console.log('Fetch storage response:', response.data); // Debug
+        if (response.data.success) {
+          setStorageInfo(response.data.storage);
+        }
+      } catch (error) {
+        console.error('Error fetching storage info:', error.response?.data || error.message);
+      }
+    };
+
+    fetchStorageInfo();
+  }, [isAuthenticated, API_URL, documents]); // Re-fetch when documents change
 
   // Fetch documents on mount
   useEffect(() => {
@@ -82,11 +124,6 @@ const Start = () => {
         const documentsData = Array.isArray(response.data) ? response.data : [];
         setDocuments(documentsData);
 
-        const uniqueFolders = [
-          ...new Set(documentsData.map((doc) => doc.folder || 'Default')),
-        ].map((name, index) => ({ id: String(index + 1), name, count: 0 }));
-        setFolders(uniqueFolders);
-
         const uniqueTags = [
           ...new Set(documentsData.flatMap((doc) => Array.isArray(doc.tags) ? doc.tags : [])),
         ];
@@ -94,7 +131,6 @@ const Start = () => {
       } catch (error) {
         console.error('Error fetching documents:', error.response?.data || error.message);
         setDocuments([]);
-        setFolders([]);
         setAvailableTags([]);
         showNotification('error', error.response?.data?.error || 'Failed to fetch documents');
       }
@@ -132,7 +168,21 @@ const Start = () => {
   // Filter documents (client-side for UI responsiveness)
   const filteredDocuments = Array.isArray(documents) ? documents.filter((doc) => {
     const matchesSearch = doc.name && doc.name.toLowerCase().includes((searchTerm || '').toLowerCase());
-    const matchesFolder = activeFolder === 'All Files' || doc.folder === activeFolder;
+    
+    // Handle special folders
+    let matchesFolder;
+    if (activeFolder === 'All Files') {
+      matchesFolder = true;
+    } else if (activeFolder === 'Favorites') {
+      matchesFolder = doc.favorite === true;
+    } else if (activeFolder === 'Recent') {
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      matchesFolder = new Date(doc.lastModified) >= thirtyDaysAgo;
+    } else {
+      matchesFolder = doc.folder === activeFolder;
+    }
+    
     const matchesTags = !Array.isArray(selectedTags) || selectedTags.length === 0 ||
       selectedTags.every((tag) => Array.isArray(doc.tags) && doc.tags.includes(tag));
     return matchesSearch && matchesFolder && matchesTags;
@@ -179,6 +229,11 @@ const Start = () => {
       Array.from(files).forEach((file) => {
         formData.append('files', file);
       });
+      
+      // Add folder to upload if viewing a specific folder
+      if (activeFolder && activeFolder !== 'All Files' && activeFolder !== 'Recent' && activeFolder !== 'Favorites' && activeFolder !== 'Shared') {
+        formData.append('folder', activeFolder);
+      }
 
       try {
         const response = await api.post(`${API_URL}/upload`, formData, {
@@ -279,29 +334,35 @@ const Start = () => {
   };
 
   // Download document
-const downloadDocument = async (id, name) => {
-  try {
-    const response = await api.get(`/uploads/download/${id}`);
+  const downloadDocument = async (id, name) => {
+    try {
+      console.log('Downloading document:', id, name); // Debug
+      const response = await api.get(`${API_URL}/download/${id}`);
 
-    if (response.data.success && response.data.url) {
-      const link = document.createElement('a');
-      link.href = response.data.url;
-      link.download = name || 'downloaded-file';
-      document.body.appendChild(link);
-      link.click();
+      if (response.data.success && response.data.url) {
+        console.log('Download URL received:', response.data.url); // Debug
+        
+        // Create temporary link and trigger download
+        const link = document.createElement('a');
+        link.href = response.data.url;
+        link.download = name || 'downloaded-file';
+        link.target = '_blank'; // Open in new tab if download fails
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
 
-      setTimeout(() => {
-        document.body.removeChild(link);
-        showNotification('success', 'Download started.');
-      }, 100);
-    } else {
-      throw new Error('No download URL returned');
+        setTimeout(() => {
+          document.body.removeChild(link);
+          showNotification('success', 'Download started');
+        }, 100);
+      } else {
+        throw new Error('No download URL returned from server');
+      }
+    } catch (error) {
+      console.error('Download failed:', error);
+      showNotification('error', error.response?.data?.error || error.message || 'Failed to download file');
     }
-  } catch (error) {
-    console.error('Download failed:', error);
-    showNotification('error', error.message || 'Failed to download file');
-  }
-};
+  };
 
   // Update document
   const updateDocument = async (id, updates) => {
@@ -423,18 +484,67 @@ const downloadDocument = async (id, name) => {
   };
 
   // Create new folder
-  const createNewFolder = () => {
-    if (newFolderName.trim()) {
-      const newFolder = {
-        id: String(folders.length + 1),
-        name: newFolderName.trim(),
-        count: 0,
-      };
+  const createNewFolder = async () => {
+    if (!newFolderName.trim()) return;
 
-      setFolders([...folders, newFolder]);
-      setNewFolderName('');
-      setShowNewFolderModal(false);
-      showNotification('success', `Folder "${newFolderName}" created`);
+    try {
+      const response = await api.post(`${API_URL}/folders`, {
+        name: newFolderName.trim(),
+        description: '',
+        color: '#3b82f6',
+      });
+      
+      console.log('Create folder response:', response.data); // Debug
+      if (response.data.success) {
+        const newFolder = { ...response.data.folder, id: response.data.folder._id };
+        setFolders([...folders, newFolder]);
+        setNewFolderName('');
+        setShowNewFolderModal(false);
+        showNotification('success', `Folder "${newFolderName}" created`);
+      }
+    } catch (error) {
+      console.error('Create folder error:', error.response?.data || error.message);
+      showNotification('error', error.response?.data?.error || 'Failed to create folder');
+    }
+  };
+
+  // Update folder
+  const updateFolder = async (folderId, updates) => {
+    try {
+      const response = await api.put(`${API_URL}/folders/${folderId}`, updates);
+      console.log('Update folder response:', response.data); // Debug
+      
+      if (response.data.success) {
+        const updatedFolder = { ...response.data.folder, id: response.data.folder._id };
+        setFolders(folders.map(f => f.id === folderId ? updatedFolder : f));
+        showNotification('success', 'Folder updated successfully');
+        setShowEditFolderModal(false);
+        setEditingFolder(null);
+      }
+    } catch (error) {
+      console.error('Update folder error:', error.response?.data || error.message);
+      showNotification('error', error.response?.data?.error || 'Failed to update folder');
+    }
+  };
+
+  // Delete folder
+  const deleteFolder = async (folderId) => {
+    try {
+      const response = await api.delete(`${API_URL}/folders/${folderId}`);
+      console.log('Delete folder response:', response.data); // Debug
+      
+      if (response.data.success) {
+        setFolders(folders.filter(f => f.id !== folderId));
+        showNotification('info', 'Folder deleted. Documents moved to Uncategorized');
+        setFolderToDelete(null);
+        
+        // Refresh documents to show updated folder
+        const docsResponse = await api.get(`${API_URL}/filter`);
+        setDocuments(Array.isArray(docsResponse.data) ? docsResponse.data : []);
+      }
+    } catch (error) {
+      console.error('Delete folder error:', error.response?.data || error.message);
+      showNotification('error', error.response?.data?.error || 'Failed to delete folder');
     }
   };
 
@@ -593,12 +703,12 @@ const downloadDocument = async (id, name) => {
 
   return (
     <div
-      className="dashboard-container"
+      className={`dashboard-container ${isMobile ? 'dashboard-hidden' : ''}`}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
       onDragLeave={handleDragLeave}
     >
-      {/* Mobile Popup */}
+      {/* Mobile/Tablet Popup - Desktop Only Message */}
       {isMobile && (
         <div className="mobile-popup-overlay">
           <div className="mobile-popup-content">
@@ -606,6 +716,7 @@ const downloadDocument = async (id, name) => {
             <p className="mobile-popup-text">
               Please use a laptop or desktop to view this page for the best experience.
             </p>
+            <p className="mobile-popup-hint">Best viewed at 1200p+ screen width</p>
           </div>
         </div>
       )}
@@ -727,17 +838,38 @@ const downloadDocument = async (id, name) => {
                 <h2 className="sidebar-section-title">Folders</h2>
                 <div className="sidebar-items">
                   {folders.map((folder) => (
-                    <button
-                      key={folder.id}
-                      className={`sidebar-item folder ${activeFolder === folder.name ? 'active' : ''}`}
-                      onClick={() => setActiveFolder(folder.name)}
-                    >
-                      <div className="folder-name">
-                        <FolderOpen size={16} className="icon" />
-                        {folder.name}
+                    <div key={folder.id} className="folder-item-container">
+                      <button
+                        className={`sidebar-item folder ${activeFolder === folder.name ? 'active' : ''}`}
+                        onClick={() => setActiveFolder(folder.name)}
+                      >
+                        <div className="folder-name">
+                          <FolderOpen size={16} className="icon" />
+                          {folder.name}
+                        </div>
+                        <span className="folder-count">{folder.count || 0}</span>
+                      </button>
+                      <div className="folder-actions">
+                        <button
+                          className="folder-action-btn"
+                          onClick={() => {
+                            setEditingFolder(folder);
+                            setNewFolderName(folder.name);
+                            setShowEditFolderModal(true);
+                          }}
+                          title="Edit folder"
+                        >
+                          <Edit size={14} />
+                        </button>
+                        <button
+                          className="folder-action-btn delete"
+                          onClick={() => setFolderToDelete(folder)}
+                          title="Delete folder"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       </div>
-                      <span className="folder-count">{folder.count}</span>
-                    </button>
+                    </div>
                   ))}
                 </div>
               </div>
@@ -773,9 +905,17 @@ const downloadDocument = async (id, name) => {
               <div className="sidebar-section">
                 <h2 className="sidebar-section-title">Storage</h2>
                 <div className="storage-bar">
-                  <div className="storage-fill"></div>
+                  <div 
+                    className="storage-fill" 
+                    style={{ width: `${Math.min(storageInfo.percentageUsed, 100)}%` }}
+                  ></div>
                 </div>
-                <p className="storage-text">8.5 GB of 15 GB used</p>
+                <p className="storage-text">
+                  {storageInfo.used.formatted} of {storageInfo.quota.formatted} used
+                </p>
+                <p className="storage-text-small">
+                  {storageInfo.fileCount} {storageInfo.fileCount === 1 ? 'file' : 'files'}
+                </p>
               </div>
             </nav>
           </aside>
@@ -1554,6 +1694,69 @@ const downloadDocument = async (id, name) => {
                 </button>
                 <button className="modal-button create" onClick={createNewTag}>
                   Create
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showEditFolderModal && editingFolder && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-body">
+              <h3 className="modal-title">Edit Folder</h3>
+              <input
+                type="text"
+                placeholder="Folder name"
+                className="modal-input"
+                value={newFolderName}
+                onChange={(e) => setNewFolderName(e.target.value)}
+              />
+              <div className="modal-actions">
+                <button
+                  className="modal-button cancel"
+                  onClick={() => {
+                    setShowEditFolderModal(false);
+                    setEditingFolder(null);
+                    setNewFolderName('');
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="modal-button create" 
+                  onClick={() => updateFolder(editingFolder.id, { name: newFolderName })}
+                >
+                  Update
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {folderToDelete && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-body">
+              <h3 className="modal-title">Delete Folder</h3>
+              <p className="modal-message">
+                Are you sure you want to delete the folder "{folderToDelete.name}"? 
+                All files in this folder will be moved to "Uncategorized".
+              </p>
+              <div className="modal-actions">
+                <button
+                  className="modal-button cancel"
+                  onClick={() => setFolderToDelete(null)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  className="modal-button delete" 
+                  onClick={() => deleteFolder(folderToDelete.id)}
+                >
+                  Delete
                 </button>
               </div>
             </div>

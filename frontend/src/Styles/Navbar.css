@@ -3,8 +3,9 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 0.5rem 0.75rem; /* Match nav-link padding */
+  padding: 0.5rem 0rem; /* Match nav-link padding */
   margin-right: 0.75rem; /* Match nav-item margin */
+  margin-left: -2rem; 
   flex-shrink: 0;
   min-width: fit-content;
   height: 100%;
@@ -106,7 +107,7 @@
 }
 
 .btn {
-  padding: 0.6rem 1.5rem;
+  padding: 0.6rem 1.5rem; 
   border-radius: 6px;
   font-weight: 500;
   text-decoration: none;
@@ -146,6 +147,7 @@
   cursor: pointer;
   padding: 0.5rem;
   border-radius: 6px;
+  margin-right: -2.75rem;
 }
 
 .user-profile:hover {
@@ -173,7 +175,7 @@
 .dropdown-menu {
   position: absolute;
   top: 100%;
-  right: 0;
+  left: -0.75rem;
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -265,6 +267,12 @@
 }
 
 /* Responsive styles */
+@media (max-width: 1024px) {
+  .logo-container {
+    margin-left: 0; /* Remove negative margin on smaller screens */
+  }
+}
+
 @media (max-width: 992px) {
   .cloud-navbar-toggler {
     display: block;
