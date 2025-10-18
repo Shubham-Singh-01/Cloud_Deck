@@ -1,12 +1,16 @@
 {
   "name": "cloud-deck",
   "version": "1.7.0",
-  "description": "<div align=\"center\">",
+  "description": "Cloud Deck - File Management System",
   "main": "index.js",
   "scripts": {
     "frontend": "npm start --prefix frontend",
     "backend": "npm run dev --prefix backend",
-    "both": "concurrently \"npm run frontend\" \"npm run backend\""
+    "both": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "build:frontend": "cd frontend && npm run build",
+    "deploy:prepare": "npm run build:frontend && echo Build complete! Deploy the frontend/build folder or backend with public folder",
+    "check:env": "node scripts/check-env.js"
   },
   "keywords": [],
   "author": "",

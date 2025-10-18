@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useContext } from 'react';
 import {
   Trash2, Upload, FileText, Search, Filter, Grid, List, Download, Eye, Edit,
   Share, Star, StarOff, Clock, Calendar, FolderPlus, Tag, X, ChevronDown,
-  Loader, AlertCircle, CheckCircle, Info, Settings, Users, Lock, FilePlus2,
-  FileSymlink, MoreHorizontal, AlertTriangle, FolderOpen, MessageCircle,
+  Loader, AlertCircle, CheckCircle, Info, Settings, Users, Lock, FilePlus,
+  File, MoreHorizontal, AlertTriangle, FolderOpen, MessageCircle,
 } from 'lucide-react';
 import '../Styles/Start.css';
 import api from '../utils/api';
@@ -44,7 +44,20 @@ const Start = () => {
   const fileInputRef = useRef(null);
   const uploadDropzoneRef = useRef(null);
 
-  const API_URL = process.env.REACT_APP_API_URL + '/api/uploads';
+  // Safely construct API URL
+  const getApiUrl = () => {
+    const envUrl = process.env.REACT_APP_API_URL;
+    
+    // If envUrl is undefined, null, or empty string, return empty string for same-origin
+    if (!envUrl || envUrl === 'undefined' || envUrl === 'null') {
+      return '/api/uploads';
+    }
+    
+    // Remove trailing slashes and append /api/uploads
+    return envUrl.replace(/\/+$/, '') + '/api/uploads';
+  };
+
+  const API_URL = getApiUrl();
 
   // Detect mobile screen size
   useEffect(() => {
@@ -659,7 +672,7 @@ const downloadDocument = async (id, name) => {
               New Folder
             </button>
             <button className="new-document-button" onClick={createNewDocument}>
-              <FilePlus2 size={16} className="icon" />
+              <FilePlus size={16} className="icon" />
               New Document
             </button>
             <button className="settings-button" onClick={handleSettings}>
@@ -1064,7 +1077,7 @@ const downloadDocument = async (id, name) => {
                             onClick={() => createFileLink(doc._id)}
                             title="Create Link"
                           >
-                            <FileSymlink size={16} />
+                            <Share size={16} />
                           </button>
                           <div className="more-menu-container">
                             <button
@@ -1208,7 +1221,7 @@ const downloadDocument = async (id, name) => {
                       onClick={() => createFileLink(doc._id)}
                       title="Create Link"
                     >
-                      <FileSymlink size={16} />
+                      <Share size={16} />
                     </button>
                     <div className="more-menu-container">
                       <button

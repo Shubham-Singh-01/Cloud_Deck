@@ -1,13 +1,26 @@
 import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL;
+// Get API URL from environment variable or fallback to empty string for same-origin requests
+const getApiUrl = () => {
+  const envUrl = process.env.REACT_APP_API_URL;
+  
+  // If envUrl is undefined, null, or empty string, return empty string for same-origin
+  if (!envUrl || envUrl === 'undefined' || envUrl === 'null') {
+    return '';
+  }
+  
+  // Remove trailing slashes
+  return envUrl.replace(/\/+$/, '');
+};
+
+const API_URL = getApiUrl();
 
 const api = axios.create({
   baseURL: API_URL,
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000, // 10-second timeout
+  timeout: 30000, // 30-second timeout for better reliability with file uploads
 });
 
 api.interceptors.request.use(
