@@ -21,28 +21,28 @@ const backendRequired = [
   'JWT_SECRET'
 ];
 
-console.log('📦 Backend Environment:');
+console.log('Backend Environment:');
 if (fs.existsSync(backendEnvPath)) {
   const backendEnv = fs.readFileSync(backendEnvPath, 'utf-8');
   const backendMissing = [];
   
   backendRequired.forEach(varName => {
     if (backendEnv.includes(`${varName}=`) && !backendEnv.includes(`${varName}=your-`)) {
-      console.log(`  ✅ ${varName}`);
+      console.log(`  [OK] ${varName}`);
     } else {
-      console.log(`  ❌ ${varName} - Missing or not set`);
+      console.log(`  [MISSING] ${varName} - Missing or not set`);
       backendMissing.push(varName);
     }
   });
   
   if (backendMissing.length === 0) {
-    console.log('  ✅ All backend variables configured!\n');
+    console.log('  [OK] All backend variables configured!\n');
   } else {
-    console.log(`  ⚠️  ${backendMissing.length} backend variable(s) need to be configured\n`);
+    console.log(`  [WARNING] ${backendMissing.length} backend variable(s) need to be configured\n`);
   }
 } else {
-  console.log('  ❌ .env file not found in backend directory');
-  console.log('  💡 Copy backend/.env.example to backend/.env and fill in values\n');
+  console.log('  [MISSING] .env file not found in backend directory');
+  console.log('  [INFO] Copy backend/.env.example to backend/.env and fill in values\n');
 }
 
 // Frontend environment variables
@@ -59,15 +59,15 @@ if (fs.existsSync(frontendEnvPath) || fs.existsSync(frontendLocalPath)) {
   if (frontendEnv.includes('REACT_APP_API_URL=')) {
     const apiUrl = frontendEnv.match(/REACT_APP_API_URL=(.*)/)?.[1]?.trim();
     if (apiUrl && apiUrl !== 'your-api-url' && !apiUrl.includes('undefined')) {
-      console.log(`  ✅ REACT_APP_API_URL=${apiUrl}`);
+      console.log(`  [OK] REACT_APP_API_URL=${apiUrl}`);
     } else {
-      console.log(`  ⚠️  REACT_APP_API_URL not properly configured`);
+      console.log(`  [WARNING] REACT_APP_API_URL not properly configured`);
     }
   } else {
-    console.log(`  ℹ️  REACT_APP_API_URL not set (will use same-origin)`);
+    console.log(`  [INFO] REACT_APP_API_URL not set (will use same-origin)`);
   }
 } else {
-  console.log('  ℹ️  No .env file found (will use same-origin for API calls)');
+  console.log('  [INFO] No .env file found (will use same-origin for API calls)');
   console.log('  💡 For separate frontend/backend deployment, create frontend/.env.local\n');
 }
 

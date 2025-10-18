@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
+    "test": "jest",
     "postinstall": "npm install --prefix ../frontend && npm run build --prefix ../frontend"
   },
   "author": "",
@@ -22,7 +23,9 @@
     "multer": "^1.4.5-lts.2"
   },
   "devDependencies": {
-    "nodemon": "^3.0.1"
+    "jest": "^29.7.0",
+    "nodemon": "^3.0.1",
+    "supertest": "^6.3.4"
   },
   "engines": {
     "node": ">=18.0.0"

@@ -192,11 +192,11 @@ router.get('/download/:id', fetchuser, async (req, res) => {
     const document = await Document.findOne({ _id: req.params.id, user: req.user.id });
 
     if (!document) {
-      console.log('❌ Document not found for ID:', req.params.id);
+      console.log('[ERROR] Document not found for ID:', req.params.id);
       return res.status(404).json({ error: 'Document not found' });
     }
 
-    console.log('✅ Document found:', document.name);
+    console.log('[SUCCESS] Document found:', document.name);
     console.log('S3 Key:', document.s3Key);
 
     // Generate a pre-signed URL for secure access from S3
@@ -209,7 +209,7 @@ router.get('/download/:id', fetchuser, async (req, res) => {
     
     console.log('Generating pre-signed URL...');
     const signedUrl = s3.getSignedUrl('getObject', params);
-    console.log('✅ Pre-signed URL generated successfully');
+    console.log('[SUCCESS] Pre-signed URL generated successfully');
     console.log('URL expires in 1 hour');
     console.log('=======================');
 
@@ -221,7 +221,7 @@ router.get('/download/:id', fetchuser, async (req, res) => {
       type: document.type
     });
   } catch (err) {
-    console.error('❌ Download error:', err);
+    console.error('[ERROR] Download error:', err);
     res.status(500).json({ error: 'Failed to initiate download', details: err.message });
   }
 });
@@ -294,7 +294,7 @@ router.post('/folders', fetchuser, async (req, res) => {
 
     // SAVE TO MONGODB PERMANENTLY
     await folder.save();
-    console.log('✅ Folder saved to MongoDB successfully!');
+    console.log('[SUCCESS] Folder saved to MongoDB successfully!');
     console.log('Folder ID:', folder._id);
     console.log('===================================');
     

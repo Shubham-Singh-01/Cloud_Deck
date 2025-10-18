@@ -13,6 +13,7 @@
 
 ![Project Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
 ![Version](https://img.shields.io/badge/Version-1.8.0-blue?style=for-the-badge)
+![Tests](https://img.shields.io/badge/Tests-13%20Passed-brightgreen?style=for-the-badge)
 ![License](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)
 
 </div>
@@ -89,6 +90,11 @@
 [![bcrypt](https://img.shields.io/badge/bcrypt.js-Latest-003B57?style=flat-square)](https://github.com/dcodeIO/bcrypt.js/)
 [![AWS S3](https://img.shields.io/badge/AWS%20S3-Storage-000000?style=flat-square&logo=amazonaws&logoColor=white)](https://aws.amazon.com/s3/)
 
+### Testing & Quality
+[![Jest](https://img.shields.io/badge/Jest-29.7.0-C21325?style=flat-square&logo=jest&logoColor=white)](https://jestjs.io/)
+[![Supertest](https://img.shields.io/badge/Supertest-6.3.3-07BA82?style=flat-square)](https://github.com/visionmedia/supertest)
+[![Test Coverage](https://img.shields.io/badge/Coverage-100%25-brightgreen?style=flat-square)](TEST_RESULTS.md)
+
 
 </div>
 
@@ -114,29 +120,33 @@ DELETE /api/uploads/:id       - Delete a upload
 
 ---
 
-## 🧪 Test Results Summary
+## 🧪 Testing & Quality Assurance
 
 <div align="center">
 
 **All 13 Tests Passing - Production Ready ✅**
 
-| Category | Tests Count | Status | Coverage |
-|:--------:|:-----------:|:------:|:--------:|
-| 🔐 Authentication | 5 | ✅ Passed | 100% |
-| 📁 File Uploads | 5 | ✅ Passed | 100% |
-| ⚡ Performance | 3 | ✅ Passed | 100% |
-| **Total** | **13** | **✅ All Passed** | **100%** |
+| Category | Tests | Status |
+|:--------:|:-----:|:------:|
+| 🔐 Authentication | 5 | ✅ Passed |
+| 📁 File Uploads | 5 | ✅ Passed |
+| ⚡ Performance | 3 | ✅ Passed |
+| **Total** | **13** | **✅ Passed** |
 
 </div>
 
-### Key Test Results:
-- ✓ JWT token generation and verification working
-- ✓ AWS S3 integration with AES256 encryption verified
-- ✓ File upload/download/delete operations functional
-- ✓ API response time: 64ms average
-- ✓ **Concurrent upload efficiency: 25% improvement** (614ms concurrent vs 817ms sequential)
+### 📊 Key Results:
+- 🚀 **64ms response time** - Lightning-fast API performance  
+- 📋 **JWT + bcrypt** - Authentication & password hashing validated
+- 🔐 **AES256 encryption** - Secure AWS S3 integration
+- ⚡ **24% efficiency improved** - Concurrent uploads via async operations
+- 🎯 **100% CRUD verified** - All file operations functional
 
-For detailed test documentation, see TEST_RESULTS.md
+```bash
+cd backend && npm test
+```
+
+📄 **[View Complete Test Results & Details →](TEST_RESULTS.md)**
 
 ---
 
@@ -154,7 +164,8 @@ For detailed test documentation, see TEST_RESULTS.md
 
 ### Prerequisites
 - Node.js (v14+) and npm installed
-- MongoDB instance (local)
+- MongoDB instance (local or cloud)
+- AWS S3 account with credentials (for file storage)
 
 <div align="center">
 
@@ -173,8 +184,16 @@ cd cloud-deck
 npm install && cd backend && npm install && cd ..
 ```
 
-3️⃣ **Configure database**
-- Update MongoDB URI in `backend/db.js` if needed
+3️⃣ **Configure environment**
+- Create `backend/.env` file with:
+```env
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+AWS_BUCKET_NAME=your_s3_bucket_name
+AWS_REGION=your_aws_region
+```
 
 4️⃣ **Launch development servers**
 ```bash
@@ -183,6 +202,11 @@ npm run both
 
 5️⃣ **Open application**
 - Navigate to `http://localhost:3000` in your browser
+
+6️⃣ **Run tests (optional)**
+```bash
+cd backend && npm test
+```
 
 ---
 

@@ -24,3 +24,10 @@ node_modules
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Documentation - Keep only README.md
+START_HERE.md
+TESTING_SIMPLE.md
+RESUME_PROOF.md
+HOW_TO_PROVE_25_PERCENT.md
+README_TESTING.md
